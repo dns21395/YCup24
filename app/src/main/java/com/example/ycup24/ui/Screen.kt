@@ -2,6 +2,8 @@ package com.example.ycup24.ui
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,12 +21,18 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toOffset
 import com.example.ycup24.R
 import com.example.ycup24.core.ui.theme.ColorSelected
 import com.example.ycup24.core.ui.theme.YCup24Theme
@@ -38,17 +46,55 @@ fun Screen(
 ) {
     Column(modifier = modifier) {
         UpperRow()
-        Drawer(Modifier.weight(1f))
+        Drawer(state, onAction, Modifier.weight(1f))
         BottomRow(state, onAction)
     }
 }
 
 @Composable
-private fun Drawer(modifier: Modifier) {
+private fun Drawer(
+    state: ScreenState,
+    onAction: (ScreenAction) -> Unit,
+    modifier: Modifier
+) {
     Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
+            .pointerInput(state.selectedTool) {
+                detectTapGestures { offset ->
+                    if (state.selectedTool == Tools.PEN) {
+                        onAction(ScreenAction.OnDrawPoint(offset))
+                    } else {
+                        onAction(ScreenAction.OnErasePoint(offset))
+                    }
+                }
+            }
+            .pointerInput(state.selectedTool) {
+                detectDragGestures(
+                    onDragStart = {},
+                    onDragEnd = {},
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        if (state.selectedTool == Tools.PEN) {
+                            onAction(
+                                ScreenAction.OnDrawLine(
+                                    change.position - dragAmount,
+                                    change.position
+                                )
+                            )
+                        } else {
+                            onAction(
+                                ScreenAction.OnEraseLine(
+                                    change.position - dragAmount,
+                                    change.position
+                                )
+                            )
+                        }
+                    }
+                )
+            }
+
     ) {
         Box(
             modifier = Modifier
@@ -59,7 +105,25 @@ private fun Drawer(modifier: Modifier) {
                 )
         ) {
             Canvas(modifier = Modifier.fillMaxSize()) {
+                state.currentLines.forEach { line ->
+                    drawLine(
+                        color = Color.Black,
+                        start = line.start.toOffset(),
+                        end = line.end.toOffset(),
+                        strokeWidth = state.currentWidth,
+                        cap = StrokeCap.Round
+                    )
+                }
 
+                state.pointers.forEach {
+                    drawCircle(
+                        Color.Red,
+                        radius = state.currentWidth / 2,
+                        center = it.toOffset(),
+                        style = Fill,
+                        blendMode = BlendMode.Clear
+                    )
+                }
             }
         }
     }
