@@ -2,6 +2,7 @@ package com.example.ycup24.ui
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,7 +20,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
@@ -38,17 +42,28 @@ fun Screen(
 ) {
     Column(modifier = modifier) {
         UpperRow()
-        Drawer(Modifier.weight(1f))
+        Drawer(state, onAction, Modifier.weight(1f))
         BottomRow(state, onAction)
     }
 }
 
 @Composable
-private fun Drawer(modifier: Modifier) {
+private fun Drawer(
+    state: ScreenState,
+    onAction: (ScreenAction) -> Unit,
+    modifier: Modifier
+) {
     Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
+            .pointerInput(Unit) {
+                detectDragGestures { change, dragAmount ->
+                    change.consume()
+                    onAction(ScreenAction.OnDrawLine(change.position - dragAmount, change.position))
+                }
+            }
+
     ) {
         Box(
             modifier = Modifier
@@ -59,7 +74,15 @@ private fun Drawer(modifier: Modifier) {
                 )
         ) {
             Canvas(modifier = Modifier.fillMaxSize()) {
-
+                state.frames[state.currentFrame].forEach { line ->
+                    drawLine(
+                        color = Color.Black,
+                        start = line.start,
+                        end = line.end,
+                        strokeWidth = 1.dp.toPx(),
+                        cap = StrokeCap.Round
+                    )
+                }
             }
         }
     }
