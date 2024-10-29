@@ -1,8 +1,8 @@
 package com.example.ycup24.ui.model
 
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.IntOffset
 
 data class Line(
-    val start: Offset,
-    val end: Offset
+    val start: IntOffset,
+    val end: IntOffset
 )

@@ -3,6 +3,7 @@ package com.example.ycup24.ui
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,8 +21,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -29,6 +32,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toOffset
 import com.example.ycup24.R
 import com.example.ycup24.core.ui.theme.ColorSelected
 import com.example.ycup24.core.ui.theme.YCup24Theme
@@ -57,11 +61,38 @@ private fun Drawer(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .pointerInput(Unit) {
-                detectDragGestures { change, dragAmount ->
-                    change.consume()
-                    onAction(ScreenAction.OnDrawLine(change.position - dragAmount, change.position))
+            .pointerInput(state.selectedTool) {
+                detectTapGestures { offset ->
+                    if (state.selectedTool == Tools.PEN) {
+                        onAction(ScreenAction.OnDrawPoint(offset))
+                    } else {
+                        onAction(ScreenAction.OnErasePoint(offset))
+                    }
                 }
+            }
+            .pointerInput(state.selectedTool) {
+                detectDragGestures(
+                    onDragStart = {},
+                    onDragEnd = {},
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        if (state.selectedTool == Tools.PEN) {
+                            onAction(
+                                ScreenAction.OnDrawLine(
+                                    change.position - dragAmount,
+                                    change.position
+                                )
+                            )
+                        } else {
+                            onAction(
+                                ScreenAction.OnEraseLine(
+                                    change.position - dragAmount,
+                                    change.position
+                                )
+                            )
+                        }
+                    }
+                )
             }
 
     ) {
@@ -74,13 +105,33 @@ private fun Drawer(
                 )
         ) {
             Canvas(modifier = Modifier.fillMaxSize()) {
-                state.frames[state.currentFrame].forEach { line ->
+//                state.frames[state.currentFrame].forEach { line ->
+//                    drawLine(
+//                        color = Color.Black,
+//                        start = line.start.toOffset(),
+//                        end = line.end.toOffset(),
+//                        strokeWidth = 10.dp.toPx(),
+//                        cap = StrokeCap.Round
+//                    )
+//                }
+
+                state.currentLines.forEach { line ->
                     drawLine(
                         color = Color.Black,
-                        start = line.start,
-                        end = line.end,
-                        strokeWidth = 1.dp.toPx(),
+                        start = line.start.toOffset(),
+                        end = line.end.toOffset(),
+                        strokeWidth = 10.dp.toPx(),
                         cap = StrokeCap.Round
+                    )
+                }
+
+                state.pointers.forEach {
+                    drawCircle(
+                        Color.Red,
+                        radius = 10.dp.toPx() / 2,
+                        center = it.toOffset(),
+                        style = Fill,
+                        blendMode = BlendMode.Clear
                     )
                 }
             }
