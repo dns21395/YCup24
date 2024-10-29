@@ -1,6 +1,7 @@
 package com.example.ycup24.ui
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,14 +26,20 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.example.ycup24.R
+import com.example.ycup24.core.ui.theme.ColorSelected
 import com.example.ycup24.core.ui.theme.YCup24Theme
+import com.example.ycup24.ui.model.Tools
 
 @Composable
-fun Screen(modifier: Modifier) {
+fun Screen(
+    state: ScreenState,
+    onAction: (ScreenAction) -> Unit,
+    modifier: Modifier
+) {
     Column(modifier = modifier) {
         UpperRow()
         Drawer(Modifier.weight(1f))
-        BottomRow()
+        BottomRow(state, onAction)
     }
 }
 
@@ -125,7 +132,10 @@ private fun UpperRow() {
 }
 
 @Composable
-private fun BottomRow() {
+private fun BottomRow(
+    state: ScreenState,
+    onAction: (ScreenAction) -> Unit,
+) {
     Row(
         Modifier
             .fillMaxWidth()
@@ -135,15 +145,19 @@ private fun BottomRow() {
         Icon(
             imageVector = ImageVector.vectorResource(id = R.drawable.ic_pen),
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onPrimary,
-            modifier = Modifier.size(32.dp)
+            tint = if (state.selectedTool == Tools.PEN) ColorSelected else MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier
+                .size(32.dp)
+                .clickable { onAction(ScreenAction.OnToolClick(Tools.PEN)) }
         )
         Spacer(Modifier.width(16.dp))
         Icon(
             imageVector = ImageVector.vectorResource(id = R.drawable.ic_erase),
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onPrimary,
-            modifier = Modifier.size(32.dp)
+            tint = if (state.selectedTool == Tools.ERASER) ColorSelected else MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier
+                .size(32.dp)
+                .clickable { onAction(ScreenAction.OnToolClick(Tools.ERASER)) }
         )
     }
 }
@@ -155,7 +169,7 @@ private fun ScreenPreview() {
         Surface(
             Modifier.fillMaxSize()
         ) {
-            Screen(Modifier)
+            Screen(ScreenState(), {}, Modifier)
         }
     }
 }
