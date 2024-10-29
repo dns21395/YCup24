@@ -105,22 +105,12 @@ private fun Drawer(
                 )
         ) {
             Canvas(modifier = Modifier.fillMaxSize()) {
-//                state.frames[state.currentFrame].forEach { line ->
-//                    drawLine(
-//                        color = Color.Black,
-//                        start = line.start.toOffset(),
-//                        end = line.end.toOffset(),
-//                        strokeWidth = 10.dp.toPx(),
-//                        cap = StrokeCap.Round
-//                    )
-//                }
-
                 state.currentLines.forEach { line ->
                     drawLine(
                         color = Color.Black,
                         start = line.start.toOffset(),
                         end = line.end.toOffset(),
-                        strokeWidth = 10.dp.toPx(),
+                        strokeWidth = state.currentWidth,
                         cap = StrokeCap.Round
                     )
                 }
@@ -128,7 +118,7 @@ private fun Drawer(
                 state.pointers.forEach {
                     drawCircle(
                         Color.Red,
-                        radius = 10.dp.toPx() / 2,
+                        radius = state.currentWidth / 2,
                         center = it.toOffset(),
                         style = Fill,
                         blendMode = BlendMode.Clear

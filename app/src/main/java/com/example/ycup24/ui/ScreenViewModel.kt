@@ -14,6 +14,10 @@ import kotlin.math.sqrt
 
 class ScreenViewModel @Inject constructor() : ViewModel() {
 
+    companion object {
+        private const val VAL_ERASER_RADIUS = 20.0f
+    }
+
     private val _state = MutableStateFlow(ScreenState())
     val state = _state.asStateFlow()
 
@@ -65,7 +69,7 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                 _state.update { currentState ->
                     var pointers = currentState.pointers
                     for (point in removePoints) {
-                        pointers = pointers.filter { distance(point, it) > 20.0f }
+                        pointers = pointers.filter { distance(point, it) > VAL_ERASER_RADIUS }
                     }
                     currentState.copy(pointers = pointers)
                 }
@@ -75,8 +79,7 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                 _state.update { currentState ->
                     val erasePoint = action.point.toIntOffset()
                     val pointers = currentState.pointers.filter {
-                        val dt = distance(erasePoint, it)
-                        dt > 20.0f
+                        distance(erasePoint, it) > VAL_ERASER_RADIUS
                     }
                     currentState.copy(pointers = pointers)
                 }
