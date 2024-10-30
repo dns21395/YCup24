@@ -29,13 +29,7 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                     Tools.ERASER -> {
                         _state.update { currentState ->
                             val lines = currentState.currentLines
-                            val points = mutableListOf<IntOffset>()
-                            for (line in lines) {
-                                val pointers = getPoints(line.start, line.end)
-                                for (point in pointers) {
-                                    points.add(point)
-                                }
-                            }
+                            val points = getLinePoints(lines)
 
                             currentState.copy(
                                 currentLines = emptyList(),
@@ -84,8 +78,65 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                     currentState.copy(pointers = pointers)
                 }
             }
+
+            is ScreenAction.OnDragEnd -> {
+                _state.update { currentState ->
+                    val lines = currentState.currentLines
+                    val points: List<IntOffset> = getLinePoints(lines)
+
+                    currentState.copy(
+                        currentLines = emptyList(),
+                        pointers = points + currentState.pointers,
+                        backActions = currentState.backActions + Pair(Tools.ERASER, points)
+                    )
+                }
+            }
+
+            is ScreenAction.OnActionBackButtonClicked -> {
+                _state.update { currentState ->
+                    val backActions = currentState.backActions.toMutableList()
+                    val nextActions = currentState.nextActions.toMutableList()
+                    if (backActions.isNotEmpty()) {
+                        val action = backActions.last()
+                        if (action.first == Tools.ERASER) {
+                            val pointers = currentState.pointers.toMutableList()
+
+                            for (point in action.second) {
+                                if (point in pointers) {
+                                    pointers.remove(point)
+                                }
+                            }
+
+                            backActions.removeLast()
+                            nextActions.add(Pair(Tools.PEN, action.second))
+
+                            currentState.copy(
+                                pointers = pointers,
+                                backActions = backActions,
+                                nextActions = nextActions
+                            )
+                        } else {
+                            currentState
+                        }
+                    } else {
+                        currentState
+                    }
+                }
+            }
         }
     }
+}
+
+private fun getLinePoints(lines: List<Line>): List<IntOffset> {
+    val points = mutableListOf<IntOffset>()
+    for (line in lines) {
+        val pointers = getPoints(line.start, line.end)
+        for (point in pointers) {
+            points.add(point)
+        }
+    }
+
+    return points
 }
 
 private fun distance(point1: IntOffset, point2: IntOffset): Float {
