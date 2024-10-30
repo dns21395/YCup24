@@ -34,6 +34,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toOffset
 import com.example.ycup24.R
+import com.example.ycup24.core.ui.theme.ColorDisabled
 import com.example.ycup24.core.ui.theme.ColorSelected
 import com.example.ycup24.core.ui.theme.YCup24Theme
 import com.example.ycup24.ui.model.Tools
@@ -45,7 +46,7 @@ fun Screen(
     modifier: Modifier
 ) {
     Column(modifier = modifier) {
-        UpperRow()
+        UpperRow(state, onAction)
         Drawer(state, onAction, Modifier.weight(1f))
         BottomRow(state, onAction)
     }
@@ -73,7 +74,9 @@ private fun Drawer(
             .pointerInput(state.selectedTool) {
                 detectDragGestures(
                     onDragStart = {},
-                    onDragEnd = {},
+                    onDragEnd = {
+                        onAction(ScreenAction.OnDragEnd)
+                    },
                     onDrag = { change, dragAmount ->
                         change.consume()
                         if (state.selectedTool == Tools.PEN) {
@@ -130,7 +133,10 @@ private fun Drawer(
 }
 
 @Composable
-private fun UpperRow() {
+private fun UpperRow(
+    state: ScreenState,
+    onAction: (ScreenAction) -> Unit,
+) {
     Row(
         Modifier
             .fillMaxWidth()
@@ -143,15 +149,19 @@ private fun UpperRow() {
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_arrow_back),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(32.dp)
+                tint = if (state.backActions.isNotEmpty()) MaterialTheme.colorScheme.onPrimary else ColorDisabled,
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable { onAction(ScreenAction.OnActionBackButtonClicked) }
             )
             Spacer(Modifier.width(16.dp))
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_arrow_next),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(32.dp)
+                tint = if (state.nextActions.isNotEmpty()) MaterialTheme.colorScheme.onPrimary else ColorDisabled,
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable { onAction(ScreenAction.OnActionForwardButtonClicked) }
             )
         }
 
