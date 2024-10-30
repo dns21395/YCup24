@@ -99,11 +99,16 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                         }
                         isNotErasing
                     }
-                    currentState.copy(
-                        backActions = currentState.backActions + Pair(Tools.PEN, erasePointers),
-                        nextActions = emptyList(),
-                        pointers = pointers,
-                    )
+
+                    if (erasePointers.isNotEmpty()) {
+                        currentState.copy(
+                            backActions = currentState.backActions + Pair(Tools.PEN, erasePointers),
+                            nextActions = emptyList(),
+                            pointers = pointers,
+                        )
+                    } else {
+                        currentState
+                    }
                 }
             }
 
@@ -120,14 +125,18 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                             nextActions = emptyList()
                         )
                     } else {
-                        currentState.copy(
-                            erasePointers = emptyList(),
-                            backActions = currentState.backActions + Pair(
-                                Tools.PEN,
-                                currentState.erasePointers
-                            ),
-                            nextActions = emptyList()
-                        )
+                        if (currentState.erasePointers.isNotEmpty()) {
+                            currentState.copy(
+                                erasePointers = emptyList(),
+                                backActions = currentState.backActions + Pair(
+                                    Tools.PEN,
+                                    currentState.erasePointers
+                                ),
+                                nextActions = emptyList()
+                            )
+                        } else {
+                            currentState
+                        }
                     }
                 }
             }
