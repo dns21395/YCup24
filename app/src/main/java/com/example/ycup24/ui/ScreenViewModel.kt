@@ -82,7 +82,6 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                     currentState.copy(
                         pointers = pointers,
                         erasePointers = currentState.erasePointers + erasePointers,
-                        nextActions = emptyList()
                     )
                 }
             }
