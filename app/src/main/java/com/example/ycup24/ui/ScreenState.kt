@@ -9,6 +9,7 @@ data class ScreenState(
     val currentWidth: Float = 15.0f,
     val backActions: List<Pair<Tools, List<IntOffset>>> = emptyList(),
     val nextActions: List<Pair<Tools, List<IntOffset>>> = emptyList(),
+    val erasePointers: List<IntOffset> = emptyList(),
     val currentLines: List<Line> = emptyList(),
     val frames: List<List<IntOffset>> = listOf(listOf()),
     val pointers: List<IntOffset> = emptyList(),

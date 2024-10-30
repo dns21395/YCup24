@@ -54,41 +54,81 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                 _state.update { currentState ->
                     val pointers = currentState.pointers.toMutableList()
                     pointers.add(action.point.toIntOffset())
-                    currentState.copy(pointers = pointers)
+                    currentState.copy(
+                        backActions = currentState.backActions + Pair(Tools.ERASER, listOf(action.point.toIntOffset())),
+                        nextActions = emptyList(),
+                        pointers = pointers
+                    )
                 }
             }
 
             is ScreenAction.OnEraseLine -> {
                 val removePoints = getPoints(action.start.toIntOffset(), action.end.toIntOffset())
+                val erasePointers = mutableListOf<IntOffset>()
+
                 _state.update { currentState ->
                     var pointers = currentState.pointers
                     for (point in removePoints) {
-                        pointers = pointers.filter { distance(point, it) > VAL_ERASER_RADIUS }
+                        pointers = pointers.filter { value ->
+                            val ifNotErase = distance(point, value) > VAL_ERASER_RADIUS
+
+                            if (!ifNotErase) {
+                                erasePointers.add(value)
+                            }
+
+                            ifNotErase
+                        }
                     }
-                    currentState.copy(pointers = pointers)
+                    currentState.copy(
+                        pointers = pointers,
+                        erasePointers = currentState.erasePointers + erasePointers,
+                        nextActions = emptyList()
+                    )
                 }
             }
 
             is ScreenAction.OnErasePoint -> {
                 _state.update { currentState ->
                     val erasePoint = action.point.toIntOffset()
-                    val pointers = currentState.pointers.filter {
-                        distance(erasePoint, it) > VAL_ERASER_RADIUS
+                    val erasePointers = mutableListOf<IntOffset>()
+
+                    val pointers = currentState.pointers.filter { point ->
+                        val isNotErasing = distance(erasePoint, point) > VAL_ERASER_RADIUS
+                        if (!isNotErasing) {
+                            erasePointers.add(point)
+                        }
+                        isNotErasing
                     }
-                    currentState.copy(pointers = pointers)
+                    currentState.copy(
+                        backActions = currentState.backActions + Pair(Tools.PEN, erasePointers),
+                        nextActions = emptyList(),
+                        pointers = pointers,
+                    )
                 }
             }
 
             is ScreenAction.OnDragEnd -> {
                 _state.update { currentState ->
-                    val lines = currentState.currentLines
-                    val points: List<IntOffset> = getLinePoints(lines)
+                    if (currentState.selectedTool == Tools.PEN) {
+                        val lines = currentState.currentLines
+                        val points: List<IntOffset> = getLinePoints(lines)
 
-                    currentState.copy(
-                        currentLines = emptyList(),
-                        pointers = points + currentState.pointers,
-                        backActions = currentState.backActions + Pair(Tools.ERASER, points)
-                    )
+                        currentState.copy(
+                            currentLines = emptyList(),
+                            pointers = points + currentState.pointers,
+                            backActions = currentState.backActions + Pair(Tools.ERASER, points),
+                            nextActions = emptyList()
+                        )
+                    } else {
+                        currentState.copy(
+                            erasePointers = emptyList(),
+                            backActions = currentState.backActions + Pair(
+                                Tools.PEN,
+                                currentState.erasePointers
+                            ),
+                            nextActions = emptyList()
+                        )
+                    }
                 }
             }
 
@@ -97,27 +137,17 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                     val backActions = currentState.backActions.toMutableList()
                     val nextActions = currentState.nextActions.toMutableList()
                     if (backActions.isNotEmpty()) {
-                        val action = backActions.last()
-                        if (action.first == Tools.ERASER) {
-                            val pointers = currentState.pointers.toMutableList()
+                        val tripe = doHistoryAction(
+                            actionList = backActions,
+                            updateList = nextActions,
+                            statePointers = currentState.pointers
+                        )
+                        currentState.copy(
+                            pointers = tripe.third,
+                            backActions = tripe.first,
+                            nextActions = tripe.second
+                        )
 
-                            for (point in action.second) {
-                                if (point in pointers) {
-                                    pointers.remove(point)
-                                }
-                            }
-
-                            backActions.removeLast()
-                            nextActions.add(Pair(Tools.PEN, action.second))
-
-                            currentState.copy(
-                                pointers = pointers,
-                                backActions = backActions,
-                                nextActions = nextActions
-                            )
-                        } else {
-                            currentState
-                        }
                     } else {
                         currentState
                     }
@@ -129,24 +159,16 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                     val backActions = currentState.backActions.toMutableList()
                     val nextActions = currentState.nextActions.toMutableList()
                     if (nextActions.isNotEmpty()) {
-                        val action = nextActions.last()
-                        if (action.first == Tools.PEN) {
-                            val pointers = currentState.pointers.toMutableList()
-                            for (point in action.second) {
-                                pointers.add(point)
-                            }
-
-                            nextActions.removeLast()
-                            backActions.add(Pair(Tools.ERASER, action.second))
-
-                            currentState.copy(
-                                pointers = pointers,
-                                backActions = backActions,
-                                nextActions = nextActions
-                            )
-                        } else {
-                            currentState
-                        }
+                        val tripe = doHistoryAction(
+                            actionList = nextActions,
+                            updateList = backActions,
+                            statePointers = currentState.pointers
+                        )
+                        currentState.copy(
+                            pointers = tripe.third,
+                            backActions = tripe.second,
+                            nextActions = tripe.first
+                        )
                     } else {
                         currentState
                     }
@@ -154,6 +176,62 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
             }
         }
     }
+}
+
+private fun doHistoryAction(
+    actionList: List<Pair<Tools, List<IntOffset>>>,
+    updateList: List<Pair<Tools, List<IntOffset>>>,
+    statePointers: List<IntOffset>
+): Triple<List<Pair<Tools, List<IntOffset>>>, List<Pair<Tools, List<IntOffset>>>, List<IntOffset>> {
+
+    val mActionList = actionList.toMutableList()
+    val mUpdateList = updateList.toMutableList()
+
+    val nextAction = mActionList.last()
+    mActionList.removeLast()
+
+    val actionTool = nextAction.first
+    val actionPointers = nextAction.second
+
+    val pointers = if (actionTool == Tools.ERASER) {
+        mUpdateList.add(Pair(Tools.PEN, actionPointers))
+        statePointers.removePointers(actionPointers)
+    } else {
+        mUpdateList.add(Pair(Tools.ERASER, actionPointers))
+        statePointers.addPointers(actionPointers)
+    }
+
+    return Triple(
+        mActionList,
+        mUpdateList,
+        pointers
+    )
+}
+
+
+private fun List<IntOffset>.addPointers(
+    penPointers: List<IntOffset>,
+): List<IntOffset> {
+    val array = this.toMutableList()
+    for (point in penPointers) {
+        array.add(point)
+    }
+
+    return array
+}
+
+private fun List<IntOffset>.removePointers(
+    erasePointers: List<IntOffset>
+): List<IntOffset> {
+    val array = this.toMutableList()
+
+    for (point in erasePointers) {
+        if (point in array) {
+            array.remove(point)
+        }
+    }
+
+    return array
 }
 
 private fun getLinePoints(lines: List<Line>): List<IntOffset> {
