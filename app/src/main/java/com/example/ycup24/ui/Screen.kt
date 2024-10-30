@@ -150,14 +150,18 @@ private fun UpperRow(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_arrow_back),
                 contentDescription = null,
                 tint = if (state.backActions.isNotEmpty()) MaterialTheme.colorScheme.onPrimary else ColorDisabled,
-                modifier = Modifier.size(32.dp).clickable { onAction(ScreenAction.OnActionBackButtonClicked) }
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable { onAction(ScreenAction.OnActionBackButtonClicked) }
             )
             Spacer(Modifier.width(16.dp))
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_arrow_next),
                 contentDescription = null,
                 tint = if (state.nextActions.isNotEmpty()) MaterialTheme.colorScheme.onPrimary else ColorDisabled,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable { onAction(ScreenAction.OnActionForwardButtonClicked) }
             )
         }
 

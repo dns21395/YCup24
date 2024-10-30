@@ -11,4 +11,5 @@ sealed interface ScreenAction {
     data class OnEraseLine(val start: Offset, val end: Offset) : ScreenAction
     data class OnErasePoint(val point: Offset) : ScreenAction
     data object OnActionBackButtonClicked : ScreenAction
+    data object OnActionForwardButtonClicked : ScreenAction
 }

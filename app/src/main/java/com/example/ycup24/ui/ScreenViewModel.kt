@@ -123,6 +123,35 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                     }
                 }
             }
+
+            is ScreenAction.OnActionForwardButtonClicked -> {
+                _state.update { currentState ->
+                    val backActions = currentState.backActions.toMutableList()
+                    val nextActions = currentState.nextActions.toMutableList()
+                    if (nextActions.isNotEmpty()) {
+                        val action = nextActions.last()
+                        if (action.first == Tools.PEN) {
+                            val pointers = currentState.pointers.toMutableList()
+                            for (point in action.second) {
+                                pointers.add(point)
+                            }
+
+                            nextActions.removeLast()
+                            backActions.add(Pair(Tools.ERASER, action.second))
+
+                            currentState.copy(
+                                pointers = pointers,
+                                backActions = backActions,
+                                nextActions = nextActions
+                            )
+                        } else {
+                            currentState
+                        }
+                    } else {
+                        currentState
+                    }
+                }
+            }
         }
     }
 }
