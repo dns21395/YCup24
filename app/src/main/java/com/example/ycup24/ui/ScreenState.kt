@@ -11,7 +11,7 @@ data class ScreenState(
     val nextActions: List<Pair<Tools, List<IntOffset>>> = emptyList(),
     val erasePointers: List<IntOffset> = emptyList(),
     val currentLines: List<Line> = emptyList(),
-    val frames: List<List<IntOffset>> = listOf(listOf()),
     val pointers: List<IntOffset> = emptyList(),
-    val selectedTool: Tools = Tools.PEN
+    val selectedTool: Tools = Tools.PEN,
+    val frames: List<List<IntOffset>> = emptyList(),
 )

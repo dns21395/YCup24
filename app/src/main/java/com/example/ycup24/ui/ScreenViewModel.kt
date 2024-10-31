@@ -182,6 +182,47 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                     }
                 }
             }
+
+            is ScreenAction.OnCreateNewFrameButtonClicked -> {
+                onCreateNewFrame()
+            }
+
+            is ScreenAction.OnRemoveCurrentFrameButtonClicked -> {
+                removeCurrentFrame()
+            }
+        }
+    }
+
+
+    private fun onCreateNewFrame() {
+        _state.update { currentState ->
+            val frames = currentState.frames.toMutableList()
+            frames.add(currentState.pointers)
+
+            currentState.copy(
+                backActions = emptyList(),
+                nextActions = emptyList(),
+                pointers = emptyList(),
+                frames = frames,
+                currentFrame = currentState.currentFrame + 1
+            )
+        }
+    }
+
+    private fun removeCurrentFrame() {
+        _state.update { currentState ->
+            if (currentState.frames.isNotEmpty()) {
+                val frames = currentState.frames.toMutableList()
+                val pointers = frames.last()
+                frames.removeLast()
+
+                currentState.copy(
+                    frames = frames,
+                    pointers = pointers
+                )
+            } else {
+                currentState
+            }
         }
     }
 }

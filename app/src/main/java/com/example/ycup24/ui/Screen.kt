@@ -20,11 +20,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.paint
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -107,6 +106,21 @@ private fun Drawer(
                     contentScale = ContentScale.Crop
                 )
         ) {
+            Canvas(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .alpha(0.5f)
+            ) {
+                if (state.frames.isNotEmpty()) {
+                    state.frames.last().forEach {
+                        drawCircle(
+                            color = Color.Black,
+                            radius = state.currentWidth / 2,
+                            center = it.toOffset(),
+                        )
+                    }
+                }
+            }
             Canvas(modifier = Modifier.fillMaxSize()) {
                 state.currentLines.forEach { line ->
                     drawLine(
@@ -120,11 +134,9 @@ private fun Drawer(
 
                 state.pointers.forEach {
                     drawCircle(
-                        Color.Red,
+                        color = Color.Black,
                         radius = state.currentWidth / 2,
                         center = it.toOffset(),
-                        style = Fill,
-                        blendMode = BlendMode.Clear
                     )
                 }
             }
@@ -172,15 +184,17 @@ private fun UpperRow(
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_remove_frame),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(32.dp)
+                tint = if (state.frames.isNotEmpty()) MaterialTheme.colorScheme.onPrimary else ColorDisabled,
+                modifier = Modifier.size(32.dp).clickable { onAction(ScreenAction.OnRemoveCurrentFrameButtonClicked) }
             )
             Spacer(Modifier.width(16.dp))
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_create_frame),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable { onAction(ScreenAction.OnCreateNewFrameButtonClicked) }
             )
         }
 
