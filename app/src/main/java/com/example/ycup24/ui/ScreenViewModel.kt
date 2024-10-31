@@ -186,6 +186,10 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
             is ScreenAction.OnCreateNewFrameButtonClicked -> {
                 onCreateNewFrame()
             }
+
+            is ScreenAction.OnRemoveCurrentFrameButtonClicked -> {
+                removeCurrentFrame()
+            }
         }
     }
 
@@ -202,6 +206,23 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                 frames = frames,
                 currentFrame = currentState.currentFrame + 1
             )
+        }
+    }
+
+    private fun removeCurrentFrame() {
+        _state.update { currentState ->
+            if (currentState.frames.isNotEmpty()) {
+                val frames = currentState.frames.toMutableList()
+                val pointers = frames.last()
+                frames.removeLast()
+
+                currentState.copy(
+                    frames = frames,
+                    pointers = pointers
+                )
+            } else {
+                currentState
+            }
         }
     }
 }

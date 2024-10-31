@@ -185,7 +185,7 @@ private fun UpperRow(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_remove_frame),
                 contentDescription = null,
                 tint = if (state.frames.isNotEmpty()) MaterialTheme.colorScheme.onPrimary else ColorDisabled,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(32.dp).clickable { onAction(ScreenAction.OnRemoveCurrentFrameButtonClicked) }
             )
             Spacer(Modifier.width(16.dp))
             Icon(
