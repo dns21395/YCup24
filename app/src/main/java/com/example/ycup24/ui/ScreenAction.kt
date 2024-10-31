@@ -12,4 +12,5 @@ sealed interface ScreenAction {
     data class OnErasePoint(val point: Offset) : ScreenAction
     data object OnActionBackButtonClicked : ScreenAction
     data object OnActionForwardButtonClicked : ScreenAction
+    data object OnCreateNewFrameButtonClicked : ScreenAction
 }

@@ -172,7 +172,7 @@ private fun UpperRow(
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_remove_frame),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimary,
+                tint = if (state.frames.isNotEmpty()) MaterialTheme.colorScheme.onPrimary else ColorDisabled,
                 modifier = Modifier.size(32.dp)
             )
             Spacer(Modifier.width(16.dp))
@@ -180,7 +180,7 @@ private fun UpperRow(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_create_frame),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(32.dp).clickable { onAction(ScreenAction.OnCreateNewFrameButtonClicked) }
             )
         }
 
