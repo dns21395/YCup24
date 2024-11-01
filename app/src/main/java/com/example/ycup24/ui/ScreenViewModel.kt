@@ -274,32 +274,24 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
             val frameDelay = 700L
             val size = state.value.frames.size
             var k = 0
-            while (k < size && isActive) {
-                _state.update { currentState ->
-                    currentState.copy(
-                        isPlay = true,
-                        animationPointers = currentState.frames[k]
-                    )
+            while (isActive) {
+                if (k == size) {
+                    _state.update { currentState ->
+                        currentState.copy(
+                            animationPointers = currentState.pointers
+                        )
+                    }
+                    k = 0
+                } else {
+                    _state.update { currentState ->
+                        currentState.copy(
+                            isPlay = true,
+                            animationPointers = currentState.frames[k]
+                        )
+                    }
+                    k++
                 }
-                k++
                 delay(frameDelay)
-            }
-            if (state.value.pointers.isNotEmpty() && isActive) {
-                _state.update { currentState ->
-                    currentState.copy(
-                        animationPointers = currentState.pointers
-                    )
-                }
-                delay(frameDelay)
-            }
-
-            if (isActive) {
-                _state.update { currentState ->
-                    currentState.copy(
-                        isPlay = false,
-                        animationPointers = emptyList()
-                    )
-                }
             }
         }
     }
