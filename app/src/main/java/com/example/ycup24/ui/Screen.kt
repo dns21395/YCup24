@@ -106,13 +106,34 @@ private fun Drawer(
                     contentScale = ContentScale.Crop
                 )
         ) {
-            Canvas(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .alpha(0.5f)
-            ) {
-                if (state.frames.isNotEmpty()) {
-                    state.frames.last().forEach {
+            if (!state.isPlay) {
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .alpha(0.5f)
+                ) {
+                    if (state.frames.isNotEmpty()) {
+                        state.frames.last().forEach {
+                            drawCircle(
+                                color = Color.Black,
+                                radius = state.currentWidth / 2,
+                                center = it.toOffset(),
+                            )
+                        }
+                    }
+                }
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    state.currentLines.forEach { line ->
+                        drawLine(
+                            color = Color.Black,
+                            start = line.start.toOffset(),
+                            end = line.end.toOffset(),
+                            strokeWidth = state.currentWidth,
+                            cap = StrokeCap.Round
+                        )
+                    }
+
+                    state.pointers.forEach {
                         drawCircle(
                             color = Color.Black,
                             radius = state.currentWidth / 2,
@@ -120,24 +141,15 @@ private fun Drawer(
                         )
                     }
                 }
-            }
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                state.currentLines.forEach { line ->
-                    drawLine(
-                        color = Color.Black,
-                        start = line.start.toOffset(),
-                        end = line.end.toOffset(),
-                        strokeWidth = state.currentWidth,
-                        cap = StrokeCap.Round
-                    )
-                }
-
-                state.pointers.forEach {
-                    drawCircle(
-                        color = Color.Black,
-                        radius = state.currentWidth / 2,
-                        center = it.toOffset(),
-                    )
+            } else {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    state.animationPointers.forEach {
+                        drawCircle(
+                            color = Color.Black,
+                            radius = state.currentWidth / 2,
+                            center = it.toOffset(),
+                        )
+                    }
                 }
             }
         }
@@ -205,15 +217,15 @@ private fun UpperRow(
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_pause),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(32.dp)
+                tint = if (state.isPlay) MaterialTheme.colorScheme.onPrimary else ColorDisabled,
+                modifier = Modifier.size(32.dp).clickable { onAction(ScreenAction.OnStopAnimationButtonClicked) }
             )
             Spacer(Modifier.width(16.dp))
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_play),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(32.dp)
+                tint = if (!state.isPlay) MaterialTheme.colorScheme.onPrimary else ColorDisabled,
+                modifier = Modifier.size(32.dp).clickable { onAction(ScreenAction.OnPlayAnimationButtonClicked) }
             )
         }
     }

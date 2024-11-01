@@ -14,4 +14,6 @@ data class ScreenState(
     val pointers: List<IntOffset> = emptyList(),
     val selectedTool: Tools = Tools.PEN,
     val frames: List<List<IntOffset>> = emptyList(),
+    val isPlay: Boolean = false,
+    val animationPointers: List<IntOffset> = emptyList()
 )

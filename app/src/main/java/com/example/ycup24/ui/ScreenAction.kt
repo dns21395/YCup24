@@ -14,4 +14,6 @@ sealed interface ScreenAction {
     data object OnActionForwardButtonClicked : ScreenAction
     data object OnCreateNewFrameButtonClicked : ScreenAction
     data object OnRemoveCurrentFrameButtonClicked : ScreenAction
+    data object OnPlayAnimationButtonClicked : ScreenAction
+    data object OnStopAnimationButtonClicked : ScreenAction
 }
