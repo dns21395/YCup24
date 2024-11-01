@@ -3,11 +3,16 @@ package com.example.ycup24.ui
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.IntOffset
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.ycup24.ui.model.Line
 import com.example.ycup24.ui.model.Tools
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.sqrt
@@ -20,6 +25,8 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
 
     private val _state = MutableStateFlow(ScreenState())
     val state = _state.asStateFlow()
+
+    private var animationJob: Job? = null
 
     fun onAction(action: ScreenAction) {
         when (action) {
@@ -42,6 +49,10 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
             }
 
             is ScreenAction.OnDrawLine -> {
+                if (state.value.isPlay) {
+                    return
+                }
+
                 _state.update { currentState ->
                     val currentLines = currentState.currentLines.toMutableList()
                     currentLines.add(Line(action.start.toIntOffset(), action.end.toIntOffset()))
@@ -51,11 +62,18 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
             }
 
             is ScreenAction.OnDrawPoint -> {
+                if (state.value.isPlay) {
+                    return
+                }
+
                 _state.update { currentState ->
                     val pointers = currentState.pointers.toMutableList()
                     pointers.add(action.point.toIntOffset())
                     currentState.copy(
-                        backActions = currentState.backActions + Pair(Tools.ERASER, listOf(action.point.toIntOffset())),
+                        backActions = currentState.backActions + Pair(
+                            Tools.ERASER,
+                            listOf(action.point.toIntOffset())
+                        ),
                         nextActions = emptyList(),
                         pointers = pointers
                     )
@@ -63,6 +81,10 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
             }
 
             is ScreenAction.OnEraseLine -> {
+                if (state.value.isPlay) {
+                    return
+                }
+
                 val removePoints = getPoints(action.start.toIntOffset(), action.end.toIntOffset())
                 val erasePointers = mutableListOf<IntOffset>()
 
@@ -87,6 +109,10 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
             }
 
             is ScreenAction.OnErasePoint -> {
+                if (state.value.isPlay) {
+                    return
+                }
+
                 _state.update { currentState ->
                     val erasePoint = action.point.toIntOffset()
                     val erasePointers = mutableListOf<IntOffset>()
@@ -112,6 +138,10 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
             }
 
             is ScreenAction.OnDragEnd -> {
+                if (state.value.isPlay) {
+                    return
+                }
+
                 _state.update { currentState ->
                     if (currentState.selectedTool == Tools.PEN) {
                         val lines = currentState.currentLines
@@ -190,9 +220,22 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
             is ScreenAction.OnRemoveCurrentFrameButtonClicked -> {
                 removeCurrentFrame()
             }
+
+            is ScreenAction.OnPlayAnimationButtonClicked -> {
+                if (state.value.isPlay) {
+                    return
+                }
+                playAnimation()
+            }
+
+            is ScreenAction.OnStopAnimationButtonClicked -> {
+                if (!state.value.isPlay) {
+                    return
+                }
+                stopAnimation()
+            }
         }
     }
-
 
     private fun onCreateNewFrame() {
         _state.update { currentState ->
@@ -223,6 +266,52 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
             } else {
                 currentState
             }
+        }
+    }
+
+    private fun playAnimation() {
+        animationJob = viewModelScope.launch {
+            val frameDelay = 700L
+            val size = state.value.frames.size
+            var k = 0
+            while (k < size && isActive) {
+                _state.update { currentState ->
+                    currentState.copy(
+                        isPlay = true,
+                        animationPointers = currentState.frames[k]
+                    )
+                }
+                k++
+                delay(frameDelay)
+            }
+            if (state.value.pointers.isNotEmpty() && isActive) {
+                _state.update { currentState ->
+                    currentState.copy(
+                        animationPointers = currentState.pointers
+                    )
+                }
+                delay(frameDelay)
+            }
+
+            if (isActive) {
+                _state.update { currentState ->
+                    currentState.copy(
+                        isPlay = false,
+                        animationPointers = emptyList()
+                    )
+                }
+            }
+        }
+    }
+
+    private fun stopAnimation() {
+        animationJob?.cancel()
+        animationJob = null
+        _state.update { currentState ->
+            currentState.copy(
+                isPlay = false,
+                animationPointers = emptyList()
+            )
         }
     }
 }
