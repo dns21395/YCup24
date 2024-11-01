@@ -166,48 +166,51 @@ private fun UpperRow(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
-        Row(
-            modifier = Modifier.weight(1f),
-            horizontalArrangement = Arrangement.Start
-        ) {
-            Icon(
-                imageVector = ImageVector.vectorResource(id = R.drawable.ic_arrow_back),
-                contentDescription = null,
-                tint = if (state.backActions.isNotEmpty()) MaterialTheme.colorScheme.onPrimary else ColorDisabled,
-                modifier = Modifier
-                    .size(32.dp)
-                    .clickable { onAction(ScreenAction.OnActionBackButtonClicked) }
-            )
-            Spacer(Modifier.width(16.dp))
-            Icon(
-                imageVector = ImageVector.vectorResource(id = R.drawable.ic_arrow_next),
-                contentDescription = null,
-                tint = if (state.nextActions.isNotEmpty()) MaterialTheme.colorScheme.onPrimary else ColorDisabled,
-                modifier = Modifier
-                    .size(32.dp)
-                    .clickable { onAction(ScreenAction.OnActionForwardButtonClicked) }
-            )
-        }
+        if (!state.isPlay) {
+            Row(
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_arrow_back),
+                    contentDescription = null,
+                    tint = if (state.backActions.isNotEmpty()) MaterialTheme.colorScheme.onPrimary else ColorDisabled,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clickable { onAction(ScreenAction.OnActionBackButtonClicked) }
+                )
+                Spacer(Modifier.width(16.dp))
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_arrow_next),
+                    contentDescription = null,
+                    tint = if (state.nextActions.isNotEmpty()) MaterialTheme.colorScheme.onPrimary else ColorDisabled,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clickable { onAction(ScreenAction.OnActionForwardButtonClicked) }
+                )
+            }
 
-        Row(
-            modifier = Modifier.weight(1f),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = ImageVector.vectorResource(id = R.drawable.ic_remove_frame),
-                contentDescription = null,
-                tint = if (state.frames.isNotEmpty()) MaterialTheme.colorScheme.onPrimary else ColorDisabled,
-                modifier = Modifier.size(32.dp).clickable { onAction(ScreenAction.OnRemoveCurrentFrameButtonClicked) }
-            )
-            Spacer(Modifier.width(16.dp))
-            Icon(
-                imageVector = ImageVector.vectorResource(id = R.drawable.ic_create_frame),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier
-                    .size(32.dp)
-                    .clickable { onAction(ScreenAction.OnCreateNewFrameButtonClicked) }
-            )
+            Row(
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_remove_frame),
+                    contentDescription = null,
+                    tint = if (state.frames.isNotEmpty()) MaterialTheme.colorScheme.onPrimary else ColorDisabled,
+                    modifier = Modifier.size(32.dp)
+                        .clickable { onAction(ScreenAction.OnRemoveCurrentFrameButtonClicked) }
+                )
+                Spacer(Modifier.width(16.dp))
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_create_frame),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clickable { onAction(ScreenAction.OnCreateNewFrameButtonClicked) }
+                )
+            }
         }
 
         Row(
@@ -239,26 +242,29 @@ private fun BottomRow(
     Row(
         Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 16.dp),
+            .padding(horizontal = 16.dp, vertical = 16.dp)
+            .size(32.dp),
         horizontalArrangement = Arrangement.Center
     ) {
-        Icon(
-            imageVector = ImageVector.vectorResource(id = R.drawable.ic_pen),
-            contentDescription = null,
-            tint = if (state.selectedTool == Tools.PEN) ColorSelected else MaterialTheme.colorScheme.onPrimary,
-            modifier = Modifier
-                .size(32.dp)
-                .clickable { onAction(ScreenAction.OnToolClick(Tools.PEN)) }
-        )
-        Spacer(Modifier.width(16.dp))
-        Icon(
-            imageVector = ImageVector.vectorResource(id = R.drawable.ic_erase),
-            contentDescription = null,
-            tint = if (state.selectedTool == Tools.ERASER) ColorSelected else MaterialTheme.colorScheme.onPrimary,
-            modifier = Modifier
-                .size(32.dp)
-                .clickable { onAction(ScreenAction.OnToolClick(Tools.ERASER)) }
-        )
+        if (!state.isPlay) {
+            Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.ic_pen),
+                contentDescription = null,
+                tint = if (state.selectedTool == Tools.PEN) ColorSelected else MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable { onAction(ScreenAction.OnToolClick(Tools.PEN)) }
+            )
+            Spacer(Modifier.width(16.dp))
+            Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.ic_erase),
+                contentDescription = null,
+                tint = if (state.selectedTool == Tools.ERASER) ColorSelected else MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable { onAction(ScreenAction.OnToolClick(Tools.ERASER)) }
+            )
+        }
     }
 }
 

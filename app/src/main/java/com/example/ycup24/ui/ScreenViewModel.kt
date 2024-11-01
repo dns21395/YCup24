@@ -49,6 +49,10 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
             }
 
             is ScreenAction.OnDrawLine -> {
+                if (state.value.isPlay) {
+                    return
+                }
+
                 _state.update { currentState ->
                     val currentLines = currentState.currentLines.toMutableList()
                     currentLines.add(Line(action.start.toIntOffset(), action.end.toIntOffset()))
@@ -58,6 +62,10 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
             }
 
             is ScreenAction.OnDrawPoint -> {
+                if (state.value.isPlay) {
+                    return
+                }
+
                 _state.update { currentState ->
                     val pointers = currentState.pointers.toMutableList()
                     pointers.add(action.point.toIntOffset())
@@ -73,6 +81,10 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
             }
 
             is ScreenAction.OnEraseLine -> {
+                if (state.value.isPlay) {
+                    return
+                }
+
                 val removePoints = getPoints(action.start.toIntOffset(), action.end.toIntOffset())
                 val erasePointers = mutableListOf<IntOffset>()
 
@@ -97,6 +109,10 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
             }
 
             is ScreenAction.OnErasePoint -> {
+                if (state.value.isPlay) {
+                    return
+                }
+
                 _state.update { currentState ->
                     val erasePoint = action.point.toIntOffset()
                     val erasePointers = mutableListOf<IntOffset>()
@@ -122,6 +138,10 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
             }
 
             is ScreenAction.OnDragEnd -> {
+                if (state.value.isPlay) {
+                    return
+                }
+
                 _state.update { currentState ->
                     if (currentState.selectedTool == Tools.PEN) {
                         val lines = currentState.currentLines
@@ -202,10 +222,16 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
             }
 
             is ScreenAction.OnPlayAnimationButtonClicked -> {
+                if (state.value.isPlay) {
+                    return
+                }
                 playAnimation()
             }
 
             is ScreenAction.OnStopAnimationButtonClicked -> {
+                if (!state.value.isPlay) {
+                    return
+                }
                 stopAnimation()
             }
         }
