@@ -1,19 +1,21 @@
 package com.example.ycup24.ui
 
-import androidx.compose.ui.unit.IntOffset
+import com.example.ycup24.core.ui.theme.BrushColorBlue
 import com.example.ycup24.ui.model.Line
+import com.example.ycup24.ui.model.Point
 import com.example.ycup24.ui.model.Tools
 
 data class ScreenState(
     val currentFrame: Int = 0,
     val currentWidth: Float = 15.0f,
-    val backActions: List<Pair<Tools, List<IntOffset>>> = emptyList(),
-    val nextActions: List<Pair<Tools, List<IntOffset>>> = emptyList(),
-    val erasePointers: List<IntOffset> = emptyList(),
+    val currentColor: ULong = BrushColorBlue.value,
+    val backActions: List<Pair<Tools, List<Point>>> = emptyList(),
+    val nextActions: List<Pair<Tools, List<Point>>> = emptyList(),
+    val erasePointers: List<Point> = emptyList(),
     val currentLines: List<Line> = emptyList(),
-    val pointers: List<IntOffset> = emptyList(),
+    val pointers: List<Point> = emptyList(),
     val selectedTool: Tools = Tools.PEN,
-    val frames: List<List<IntOffset>> = emptyList(),
+    val frames: List<List<Point>> = emptyList(),
     val isPlay: Boolean = false,
-    val animationPointers: List<IntOffset> = emptyList()
+    val animationPointers: List<Point> = emptyList()
 )

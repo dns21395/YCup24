@@ -5,6 +5,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ycup24.ui.model.Line
+import com.example.ycup24.ui.model.Point
 import com.example.ycup24.ui.model.Tools
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -31,186 +32,50 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
     fun onAction(action: ScreenAction) {
         when (action) {
             is ScreenAction.OnToolClick -> {
-                when (action.tool) {
-                    Tools.PEN -> _state.update { it.copy(selectedTool = action.tool) }
-                    Tools.ERASER -> {
-                        _state.update { currentState ->
-                            val lines = currentState.currentLines
-                            val points = getLinePoints(lines)
-
-                            currentState.copy(
-                                currentLines = emptyList(),
-                                pointers = points + currentState.pointers,
-                                selectedTool = action.tool,
-                            )
-                        }
-                    }
-                }
+                onToolClick(action.tool)
             }
 
             is ScreenAction.OnDrawLine -> {
                 if (state.value.isPlay) {
                     return
                 }
-
-                _state.update { currentState ->
-                    val currentLines = currentState.currentLines.toMutableList()
-                    currentLines.add(Line(action.start.toIntOffset(), action.end.toIntOffset()))
-
-                    currentState.copy(currentLines = currentLines)
-                }
+                onDrawLine(action.start, action.end)
             }
 
             is ScreenAction.OnDrawPoint -> {
                 if (state.value.isPlay) {
                     return
                 }
-
-                _state.update { currentState ->
-                    val pointers = currentState.pointers.toMutableList()
-                    pointers.add(action.point.toIntOffset())
-                    currentState.copy(
-                        backActions = currentState.backActions + Pair(
-                            Tools.ERASER,
-                            listOf(action.point.toIntOffset())
-                        ),
-                        nextActions = emptyList(),
-                        pointers = pointers
-                    )
-                }
+                onDrawPoint(action.point)
             }
 
             is ScreenAction.OnEraseLine -> {
                 if (state.value.isPlay) {
                     return
                 }
-
-                val removePoints = getPoints(action.start.toIntOffset(), action.end.toIntOffset())
-                val erasePointers = mutableListOf<IntOffset>()
-
-                _state.update { currentState ->
-                    var pointers = currentState.pointers
-                    for (point in removePoints) {
-                        pointers = pointers.filter { value ->
-                            val ifNotErase = distance(point, value) > VAL_ERASER_RADIUS
-
-                            if (!ifNotErase) {
-                                erasePointers.add(value)
-                            }
-
-                            ifNotErase
-                        }
-                    }
-                    currentState.copy(
-                        pointers = pointers,
-                        erasePointers = currentState.erasePointers + erasePointers,
-                    )
-                }
+                onEraseLine(action.start, action.end)
             }
 
             is ScreenAction.OnErasePoint -> {
                 if (state.value.isPlay) {
                     return
                 }
-
-                _state.update { currentState ->
-                    val erasePoint = action.point.toIntOffset()
-                    val erasePointers = mutableListOf<IntOffset>()
-
-                    val pointers = currentState.pointers.filter { point ->
-                        val isNotErasing = distance(erasePoint, point) > VAL_ERASER_RADIUS
-                        if (!isNotErasing) {
-                            erasePointers.add(point)
-                        }
-                        isNotErasing
-                    }
-
-                    if (erasePointers.isNotEmpty()) {
-                        currentState.copy(
-                            backActions = currentState.backActions + Pair(Tools.PEN, erasePointers),
-                            nextActions = emptyList(),
-                            pointers = pointers,
-                        )
-                    } else {
-                        currentState
-                    }
-                }
+                onErasePoint(action.point)
             }
 
             is ScreenAction.OnDragEnd -> {
                 if (state.value.isPlay) {
                     return
                 }
-
-                _state.update { currentState ->
-                    if (currentState.selectedTool == Tools.PEN) {
-                        val lines = currentState.currentLines
-                        val points: List<IntOffset> = getLinePoints(lines)
-
-                        currentState.copy(
-                            currentLines = emptyList(),
-                            pointers = points + currentState.pointers,
-                            backActions = currentState.backActions + Pair(Tools.ERASER, points),
-                            nextActions = emptyList()
-                        )
-                    } else {
-                        if (currentState.erasePointers.isNotEmpty()) {
-                            currentState.copy(
-                                erasePointers = emptyList(),
-                                backActions = currentState.backActions + Pair(
-                                    Tools.PEN,
-                                    currentState.erasePointers
-                                ),
-                                nextActions = emptyList()
-                            )
-                        } else {
-                            currentState
-                        }
-                    }
-                }
+                onDragEnd()
             }
 
             is ScreenAction.OnActionBackButtonClicked -> {
-                _state.update { currentState ->
-                    val backActions = currentState.backActions.toMutableList()
-                    val nextActions = currentState.nextActions.toMutableList()
-                    if (backActions.isNotEmpty()) {
-                        val tripe = doHistoryAction(
-                            actionList = backActions,
-                            updateList = nextActions,
-                            statePointers = currentState.pointers
-                        )
-                        currentState.copy(
-                            pointers = tripe.third,
-                            backActions = tripe.first,
-                            nextActions = tripe.second
-                        )
-
-                    } else {
-                        currentState
-                    }
-                }
+                onActionBackButtonClicked()
             }
 
             is ScreenAction.OnActionForwardButtonClicked -> {
-                _state.update { currentState ->
-                    val backActions = currentState.backActions.toMutableList()
-                    val nextActions = currentState.nextActions.toMutableList()
-                    if (nextActions.isNotEmpty()) {
-                        val tripe = doHistoryAction(
-                            actionList = nextActions,
-                            updateList = backActions,
-                            statePointers = currentState.pointers
-                        )
-                        currentState.copy(
-                            pointers = tripe.third,
-                            backActions = tripe.second,
-                            nextActions = tripe.first
-                        )
-                    } else {
-                        currentState
-                    }
-                }
+                onActionForwardButtonClicked()
             }
 
             is ScreenAction.OnCreateNewFrameButtonClicked -> {
@@ -233,6 +98,169 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                     return
                 }
                 stopAnimation()
+            }
+        }
+    }
+
+    private fun onToolClick(tool: Tools) {
+        when (tool) {
+            Tools.PEN -> _state.update { it.copy(selectedTool = tool) }
+            Tools.ERASER -> {
+                _state.update { currentState ->
+                    val lines = currentState.currentLines
+                    val points = getLinePoints(lines, currentState.currentColor)
+
+                    currentState.copy(
+                        currentLines = emptyList(),
+                        pointers = points + currentState.pointers,
+                        selectedTool = tool,
+                    )
+                }
+            }
+        }
+    }
+
+    private fun onDrawLine(start: Offset, end: Offset) {
+        _state.update { currentState ->
+            val currentLines = currentState.currentLines.toMutableList()
+            currentLines.add(Line(start.toIntOffset(), end.toIntOffset()))
+
+            currentState.copy(currentLines = currentLines)
+        }
+    }
+
+    private fun onDrawPoint(point: Offset) {
+        _state.update { currentState ->
+            val pointers = currentState.pointers.toMutableList()
+            pointers.add(Point(point.toIntOffset(), currentState.currentColor))
+            currentState.copy(
+                backActions = currentState.backActions + Pair(
+                    Tools.ERASER,
+                    listOf(Point(point.toIntOffset(), currentState.currentColor))
+                ),
+                nextActions = emptyList(),
+                pointers = pointers
+            )
+        }
+    }
+
+    private fun onEraseLine(start: Offset, end: Offset) {
+        val removePoints = getPoints(start.toIntOffset(), end.toIntOffset())
+        val erasePointers = mutableListOf<Point>()
+
+        _state.update { currentState ->
+            var pointers = currentState.pointers
+            for (point in removePoints) {
+                pointers = pointers.filter { value ->
+                    val ifNotErase = distance(point, value.position) > VAL_ERASER_RADIUS
+
+                    if (!ifNotErase) {
+                        erasePointers.add(value)
+                    }
+
+                    ifNotErase
+                }
+            }
+            currentState.copy(
+                pointers = pointers,
+                erasePointers = currentState.erasePointers + erasePointers,
+            )
+        }
+    }
+
+    private fun onErasePoint(point: Offset) {
+        _state.update { currentState ->
+            val erasePoint = point.toIntOffset()
+            val erasePointers = mutableListOf<Point>()
+
+            val pointers = currentState.pointers.filter { point ->
+                val isNotErasing = distance(erasePoint, point.position) > VAL_ERASER_RADIUS
+                if (!isNotErasing) {
+                    erasePointers.add(point)
+                }
+                isNotErasing
+            }
+
+            if (erasePointers.isNotEmpty()) {
+                currentState.copy(
+                    backActions = currentState.backActions + Pair(Tools.PEN, erasePointers),
+                    nextActions = emptyList(),
+                    pointers = pointers,
+                )
+            } else {
+                currentState
+            }
+        }
+    }
+
+    private fun onDragEnd() {
+        _state.update { currentState ->
+            if (currentState.selectedTool == Tools.PEN) {
+                val lines = currentState.currentLines
+                val points: List<Point> = getLinePoints(lines, currentState.currentColor)
+
+                currentState.copy(
+                    currentLines = emptyList(),
+                    pointers = points + currentState.pointers,
+                    backActions = currentState.backActions + Pair(Tools.ERASER, points),
+                    nextActions = emptyList()
+                )
+            } else {
+                if (currentState.erasePointers.isNotEmpty()) {
+                    currentState.copy(
+                        erasePointers = emptyList(),
+                        backActions = currentState.backActions + Pair(
+                            Tools.PEN,
+                            currentState.erasePointers
+                        ),
+                        nextActions = emptyList()
+                    )
+                } else {
+                    currentState
+                }
+            }
+        }
+    }
+
+    private fun onActionBackButtonClicked() {
+        _state.update { currentState ->
+            val backActions = currentState.backActions.toMutableList()
+            val nextActions = currentState.nextActions.toMutableList()
+            if (backActions.isNotEmpty()) {
+                val tripe = doHistoryAction(
+                    actionList = backActions,
+                    updateList = nextActions,
+                    statePointers = currentState.pointers
+                )
+                currentState.copy(
+                    pointers = tripe.third,
+                    backActions = tripe.first,
+                    nextActions = tripe.second
+                )
+
+            } else {
+                currentState
+            }
+        }
+    }
+
+    private fun onActionForwardButtonClicked() {
+        _state.update { currentState ->
+            val backActions = currentState.backActions.toMutableList()
+            val nextActions = currentState.nextActions.toMutableList()
+            if (nextActions.isNotEmpty()) {
+                val tripe = doHistoryAction(
+                    actionList = nextActions,
+                    updateList = backActions,
+                    statePointers = currentState.pointers
+                )
+                currentState.copy(
+                    pointers = tripe.third,
+                    backActions = tripe.second,
+                    nextActions = tripe.first
+                )
+            } else {
+                currentState
             }
         }
     }
@@ -309,10 +337,10 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
 }
 
 private fun doHistoryAction(
-    actionList: List<Pair<Tools, List<IntOffset>>>,
-    updateList: List<Pair<Tools, List<IntOffset>>>,
-    statePointers: List<IntOffset>
-): Triple<List<Pair<Tools, List<IntOffset>>>, List<Pair<Tools, List<IntOffset>>>, List<IntOffset>> {
+    actionList: List<Pair<Tools, List<Point>>>,
+    updateList: List<Pair<Tools, List<Point>>>,
+    statePointers: List<Point>
+): Triple<List<Pair<Tools, List<Point>>>, List<Pair<Tools, List<Point>>>, List<Point>> {
 
     val mActionList = actionList.toMutableList()
     val mUpdateList = updateList.toMutableList()
@@ -339,9 +367,9 @@ private fun doHistoryAction(
 }
 
 
-private fun List<IntOffset>.addPointers(
-    penPointers: List<IntOffset>,
-): List<IntOffset> {
+private fun List<Point>.addPointers(
+    penPointers: List<Point>,
+): List<Point> {
     val array = this.toMutableList()
     for (point in penPointers) {
         array.add(point)
@@ -350,9 +378,9 @@ private fun List<IntOffset>.addPointers(
     return array
 }
 
-private fun List<IntOffset>.removePointers(
-    erasePointers: List<IntOffset>
-): List<IntOffset> {
+private fun List<Point>.removePointers(
+    erasePointers: List<Point>
+): List<Point> {
     val array = this.toMutableList()
 
     for (point in erasePointers) {
@@ -364,12 +392,15 @@ private fun List<IntOffset>.removePointers(
     return array
 }
 
-private fun getLinePoints(lines: List<Line>): List<IntOffset> {
-    val points = mutableListOf<IntOffset>()
+private fun getLinePoints(
+    lines: List<Line>,
+    color: ULong,
+): List<Point> {
+    val points = mutableListOf<Point>()
     for (line in lines) {
         val pointers = getPoints(line.start, line.end)
         for (point in pointers) {
-            points.add(point)
+            points.add(Point(point, color))
         }
     }
 

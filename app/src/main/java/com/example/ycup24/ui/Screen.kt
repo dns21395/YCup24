@@ -96,7 +96,6 @@ private fun Drawer(
                     }
                 )
             }
-
     ) {
         Box(
             modifier = Modifier
@@ -113,11 +112,11 @@ private fun Drawer(
                         .alpha(0.5f)
                 ) {
                     if (state.frames.isNotEmpty()) {
-                        state.frames.last().forEach {
+                        state.frames.last().forEach { point ->
                             drawCircle(
-                                color = Color.Black,
+                                color = Color(point.color),
                                 radius = state.currentWidth / 2,
-                                center = it.toOffset(),
+                                center = point.position.toOffset(),
                             )
                         }
                     }
@@ -125,7 +124,7 @@ private fun Drawer(
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     state.currentLines.forEach { line ->
                         drawLine(
-                            color = Color.Black,
+                            color = Color(state.currentColor),
                             start = line.start.toOffset(),
                             end = line.end.toOffset(),
                             strokeWidth = state.currentWidth,
@@ -133,21 +132,21 @@ private fun Drawer(
                         )
                     }
 
-                    state.pointers.forEach {
+                    state.pointers.forEach { point ->
                         drawCircle(
-                            color = Color.Black,
+                            color = Color(point.color),
                             radius = state.currentWidth / 2,
-                            center = it.toOffset(),
+                            center = point.position.toOffset(),
                         )
                     }
                 }
             } else {
                 Canvas(modifier = Modifier.fillMaxSize()) {
-                    state.animationPointers.forEach {
+                    state.animationPointers.forEach { point ->
                         drawCircle(
-                            color = Color.Black,
+                            color = Color(point.color),
                             radius = state.currentWidth / 2,
-                            center = it.toOffset(),
+                            center = point.position.toOffset(),
                         )
                     }
                 }
@@ -198,7 +197,8 @@ private fun UpperRow(
                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_remove_frame),
                     contentDescription = null,
                     tint = if (state.frames.isNotEmpty()) MaterialTheme.colorScheme.onPrimary else ColorDisabled,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier
+                        .size(32.dp)
                         .clickable { onAction(ScreenAction.OnRemoveCurrentFrameButtonClicked) }
                 )
                 Spacer(Modifier.width(16.dp))
@@ -221,14 +221,18 @@ private fun UpperRow(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_pause),
                 contentDescription = null,
                 tint = if (state.isPlay) MaterialTheme.colorScheme.onPrimary else ColorDisabled,
-                modifier = Modifier.size(32.dp).clickable { onAction(ScreenAction.OnStopAnimationButtonClicked) }
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable { onAction(ScreenAction.OnStopAnimationButtonClicked) }
             )
             Spacer(Modifier.width(16.dp))
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_play),
                 contentDescription = null,
                 tint = if (!state.isPlay && state.frames.isNotEmpty()) MaterialTheme.colorScheme.onPrimary else ColorDisabled,
-                modifier = Modifier.size(32.dp).clickable { onAction(ScreenAction.OnPlayAnimationButtonClicked) }
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable { onAction(ScreenAction.OnPlayAnimationButtonClicked) }
             )
         }
     }
