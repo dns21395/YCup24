@@ -30,11 +30,12 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
     private var animationJob: Job? = null
 
     fun onAction(action: ScreenAction) {
-        if (state.value.isColorPaletteVisible && action !is ScreenAction.OnColorPicked) {
+        if (state.value.isColorPaletteVisible && (action !is ScreenAction.OnColorPicked && action !is ScreenAction.OnExtraPaletteClicked)) {
             _state.update { currentState ->
                 currentState.copy(
                     selectedTool = Tools.PEN,
-                    isColorPaletteVisible = false
+                    isColorPaletteVisible = false,
+                    isExtraColorPaletteVisible = false
                 )
             }
         }
@@ -112,16 +113,17 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
             is ScreenAction.OnColorPicked -> {
                 onColorPicked(action.color)
             }
+
+            is ScreenAction.OnExtraPaletteClicked -> {
+                _state.update { it.copy(isExtraColorPaletteVisible = !it.isExtraColorPaletteVisible) }
+            }
         }
     }
 
     private fun onToolClick(tool: Tools) {
         when (tool) {
             Tools.PEN -> _state.update {
-                it.copy(
-                    selectedTool = tool,
-                    isColorPaletteVisible = false
-                )
+                it.copy(selectedTool = tool)
             }
 
             Tools.ERASER -> {
@@ -133,7 +135,6 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                         currentLines = emptyList(),
                         pointers = points + currentState.pointers,
                         selectedTool = tool,
-                        isColorPaletteVisible = false,
                     )
                 }
             }
@@ -369,7 +370,8 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
             currentState.copy(
                 currentColor = color,
                 selectedTool = Tools.PEN,
-                isColorPaletteVisible = false
+                isColorPaletteVisible = false,
+                isExtraColorPaletteVisible = false,
             )
         }
     }

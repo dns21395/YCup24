@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -42,6 +43,7 @@ import com.example.ycup24.core.ui.theme.BrushColorRed
 import com.example.ycup24.core.ui.theme.ColorDisabled
 import com.example.ycup24.core.ui.theme.ColorSelected
 import com.example.ycup24.core.ui.theme.YCup24Theme
+import com.example.ycup24.core.ui.theme.colors
 import com.example.ycup24.ui.model.Tools
 
 @Composable
@@ -159,6 +161,7 @@ private fun Drawer(
             }
             if (state.isColorPaletteVisible) {
                 ColorPalette(
+                    state = state,
                     onAction = onAction,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
@@ -306,27 +309,66 @@ private fun BottomRow(
 }
 
 @Composable
-fun ColorPalette(
-    onAction: (ScreenAction) -> Unit,
-    modifier: Modifier,
+fun ExtraColorPalette(
+    onAction: (ScreenAction) -> Unit
 ) {
     Card(
-        modifier = modifier,
         colors = CardDefaults.cardColors(
             containerColor = Color.DarkGray.copy(alpha = 0.5f),
         )
     ) {
-        Row(
-            Modifier.padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceAround
+        for (i in 0 until colors.size / 5) {
+            Row(
+                Modifier.padding(start = 16.dp, top = 16.dp, bottom = 16.dp),
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                for (j in 0 until 5) {
+                    BrushColor(Color(colors[i * 5 + j]), onAction)
+                    Spacer(Modifier.width(16.dp))
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun ColorPalette(
+    state: ScreenState,
+    onAction: (ScreenAction) -> Unit,
+    modifier: Modifier,
+) {
+    Column(modifier = modifier) {
+        if (state.isExtraColorPaletteVisible) {
+            ExtraColorPalette(onAction)
+            Spacer(Modifier.height(16.dp))
+        }
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = Color.DarkGray.copy(alpha = 0.5f),
+            )
         ) {
-            BrushColor(Color.White, onAction)
-            Spacer(Modifier.width(16.dp))
-            BrushColor(BrushColorRed, onAction)
-            Spacer(Modifier.width(16.dp))
-            BrushColor(Color.Black, onAction)
-            Spacer(Modifier.width(16.dp))
-            BrushColor(BrushColorBlue, onAction)
+            Row(
+                Modifier.padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_palette),
+                    contentDescription = null,
+                    tint = if (state.isExtraColorPaletteVisible) ColorSelected else MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clickable { onAction(ScreenAction.OnExtraPaletteClicked) }
+                )
+                Spacer(Modifier.width(16.dp))
+                BrushColor(Color.White, onAction)
+                Spacer(Modifier.width(16.dp))
+                BrushColor(BrushColorRed, onAction)
+                Spacer(Modifier.width(16.dp))
+                BrushColor(Color.Black, onAction)
+                Spacer(Modifier.width(16.dp))
+                BrushColor(BrushColorBlue, onAction)
+            }
         }
     }
 }

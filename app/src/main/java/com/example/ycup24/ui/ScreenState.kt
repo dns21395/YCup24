@@ -19,4 +19,5 @@ data class ScreenState(
     val isPlay: Boolean = false,
     val animationPointers: List<Point> = emptyList(),
     val isColorPaletteVisible: Boolean = false,
+    val isExtraColorPaletteVisible: Boolean = false,
 )
