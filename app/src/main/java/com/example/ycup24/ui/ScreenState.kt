@@ -17,5 +17,6 @@ data class ScreenState(
     val selectedTool: Tools = Tools.PEN,
     val frames: List<List<Point>> = emptyList(),
     val isPlay: Boolean = false,
-    val animationPointers: List<Point> = emptyList()
+    val animationPointers: List<Point> = emptyList(),
+    val isColorPaletteVisible: Boolean = false,
 )

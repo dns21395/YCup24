@@ -16,4 +16,5 @@ sealed interface ScreenAction {
     data object OnRemoveCurrentFrameButtonClicked : ScreenAction
     data object OnPlayAnimationButtonClicked : ScreenAction
     data object OnStopAnimationButtonClicked : ScreenAction
+    data class OnColorPicked(val color: ULong) : ScreenAction
 }

@@ -1,6 +1,7 @@
 package com.example.ycup24.ui
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -14,11 +15,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.paint
@@ -33,6 +37,8 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toOffset
 import com.example.ycup24.R
+import com.example.ycup24.core.ui.theme.BrushColorBlue
+import com.example.ycup24.core.ui.theme.BrushColorRed
 import com.example.ycup24.core.ui.theme.ColorDisabled
 import com.example.ycup24.core.ui.theme.ColorSelected
 import com.example.ycup24.core.ui.theme.YCup24Theme
@@ -151,6 +157,14 @@ private fun Drawer(
                     }
                 }
             }
+            if (state.isColorPaletteVisible) {
+                ColorPalette(
+                    onAction = onAction,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 8.dp)
+                )
+            }
         }
     }
 }
@@ -268,8 +282,66 @@ private fun BottomRow(
                     .size(32.dp)
                     .clickable { onAction(ScreenAction.OnToolClick(Tools.ERASER)) }
             )
+            Spacer(Modifier.width(16.dp))
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .background(
+                        color = if (state.selectedTool == Tools.COLOR_PALETTE) ColorSelected else Color(
+                            state.currentColor
+                        ), shape = CircleShape
+                    )
+                    .clickable { onAction(ScreenAction.OnToolClick(Tools.COLOR_PALETTE)) }
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .background(color = Color(state.currentColor), shape = CircleShape)
+                        .align(Alignment.Center)
+                        .clickable { onAction(ScreenAction.OnToolClick(Tools.COLOR_PALETTE)) }
+                )
+            }
         }
     }
+}
+
+@Composable
+fun ColorPalette(
+    onAction: (ScreenAction) -> Unit,
+    modifier: Modifier,
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = Color.DarkGray.copy(alpha = 0.5f),
+        )
+    ) {
+        Row(
+            Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            BrushColor(Color.White, onAction)
+            Spacer(Modifier.width(16.dp))
+            BrushColor(BrushColorRed, onAction)
+            Spacer(Modifier.width(16.dp))
+            BrushColor(Color.Black, onAction)
+            Spacer(Modifier.width(16.dp))
+            BrushColor(BrushColorBlue, onAction)
+        }
+    }
+}
+
+@Composable
+fun BrushColor(
+    color: Color,
+    onAction: (ScreenAction) -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .size(32.dp)
+            .background(color = color, shape = CircleShape)
+            .clickable { onAction(ScreenAction.OnColorPicked(color.value)) }
+    )
 }
 
 @PreviewLightDark

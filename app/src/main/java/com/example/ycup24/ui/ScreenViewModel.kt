@@ -30,6 +30,15 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
     private var animationJob: Job? = null
 
     fun onAction(action: ScreenAction) {
+        if (state.value.isColorPaletteVisible && action !is ScreenAction.OnColorPicked) {
+            _state.update { currentState ->
+                currentState.copy(
+                    selectedTool = Tools.PEN,
+                    isColorPaletteVisible = false
+                )
+            }
+        }
+
         when (action) {
             is ScreenAction.OnToolClick -> {
                 onToolClick(action.tool)
@@ -99,12 +108,22 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                 }
                 stopAnimation()
             }
+
+            is ScreenAction.OnColorPicked -> {
+                onColorPicked(action.color)
+            }
         }
     }
 
     private fun onToolClick(tool: Tools) {
         when (tool) {
-            Tools.PEN -> _state.update { it.copy(selectedTool = tool) }
+            Tools.PEN -> _state.update {
+                it.copy(
+                    selectedTool = tool,
+                    isColorPaletteVisible = false
+                )
+            }
+
             Tools.ERASER -> {
                 _state.update { currentState ->
                     val lines = currentState.currentLines
@@ -114,6 +133,16 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                         currentLines = emptyList(),
                         pointers = points + currentState.pointers,
                         selectedTool = tool,
+                        isColorPaletteVisible = false,
+                    )
+                }
+            }
+
+            Tools.COLOR_PALETTE -> {
+                _state.update { currentState ->
+                    currentState.copy(
+                        selectedTool = tool,
+                        isColorPaletteVisible = true
                     )
                 }
             }
@@ -331,6 +360,16 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
             currentState.copy(
                 isPlay = false,
                 animationPointers = emptyList()
+            )
+        }
+    }
+
+    private fun onColorPicked(color: ULong) {
+        _state.update { currentState ->
+            currentState.copy(
+                currentColor = color,
+                selectedTool = Tools.PEN,
+                isColorPaletteVisible = false
             )
         }
     }
