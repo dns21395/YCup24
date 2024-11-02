@@ -19,6 +19,7 @@ import com.example.ycup24.core.ui.theme.YCup24Theme
 import com.example.ycup24.di.DaggerAppComponent
 import com.example.ycup24.di.daggerViewModel
 import com.example.ycup24.ui.Screen
+import com.example.ycup24.ui.frames.FramesScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,11 +37,19 @@ class MainActivity : ComponentActivity() {
                         .fillMaxSize()
                         .background(colorScheme.background)
                 ) { innerPadding ->
-                    Screen(
-                        state = state,
-                        onAction = viewModel::onAction,
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    if (state.isShowFramesListScreen) {
+                        FramesScreen(
+                            state = state,
+                            onAction = viewModel::onAction,
+                            modifier = Modifier.padding(innerPadding)
+                        )
+                    } else {
+                        Screen(
+                            state = state,
+                            onAction = viewModel::onAction,
+                            modifier = Modifier.padding(innerPadding)
+                        )
+                    }
                 }
             }
         }

@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -67,8 +68,16 @@ private fun Drawer(
 ) {
     Card(
         modifier = modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .padding(horizontal = 16.dp)
+            .onGloballyPositioned { coordinates ->
+                onAction(
+                    ScreenAction.OnReceivedDrawerSize(
+                        coordinates.size.width,
+                        coordinates.size.height,
+                    )
+                )
+            }
             .pointerInput(state.selectedTool) {
                 detectTapGestures { offset ->
                     if (state.selectedTool == Tools.PEN) {
@@ -226,6 +235,15 @@ private fun UpperRow(
                     modifier = Modifier
                         .size(32.dp)
                         .clickable { onAction(ScreenAction.OnCreateNewFrameButtonClicked) }
+                )
+                Spacer(Modifier.width(16.dp))
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_frame_list),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clickable { onAction(ScreenAction.OnFramesGroupClicked) }
                 )
             }
         }

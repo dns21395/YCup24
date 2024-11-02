@@ -6,6 +6,8 @@ import com.example.ycup24.ui.model.Point
 import com.example.ycup24.ui.model.Tools
 
 data class ScreenState(
+    val previewFrameWidth: Float = 0.0f,
+    val previewFragmentHeight: Float = 0.0f,
     val currentFrame: Int = 0,
     val currentWidth: Float = 15.0f,
     val currentColor: ULong = BrushColorBlue.value,
@@ -20,4 +22,5 @@ data class ScreenState(
     val animationPointers: List<Point> = emptyList(),
     val isColorPaletteVisible: Boolean = false,
     val isExtraColorPaletteVisible: Boolean = false,
+    val isShowFramesListScreen: Boolean = false,
 )

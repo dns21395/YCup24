@@ -117,6 +117,21 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
             is ScreenAction.OnExtraPaletteClicked -> {
                 _state.update { it.copy(isExtraColorPaletteVisible = !it.isExtraColorPaletteVisible) }
             }
+
+            is ScreenAction.OnFramesGroupClicked -> {
+                _state.update {
+                    it.copy(isShowFramesListScreen = !it.isShowFramesListScreen)
+                }
+            }
+
+            is ScreenAction.OnReceivedDrawerSize -> {
+                _state.update {
+                    it.copy(
+                        previewFrameWidth = action.width * 0.25f,
+                        previewFragmentHeight = action.height * 0.25f,
+                    )
+                }
+            }
         }
     }
 
