@@ -22,6 +22,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -128,8 +129,8 @@ private fun Drawer(
                         .fillMaxSize()
                         .alpha(0.5f)
                 ) {
-                    if (state.frames.isNotEmpty()) {
-                        state.frames.last().forEach { point ->
+                    if (state.frames.size > 1 && state.currentFrame != 0) {
+                        state.frames[state.currentFrame - 1].forEach { point ->
                             drawCircle(
                                 color = Color(point.color),
                                 radius = state.currentWidth / 2,
@@ -149,7 +150,7 @@ private fun Drawer(
                         )
                     }
 
-                    state.pointers.forEach { point ->
+                    state.frames[state.currentFrame].forEach { point ->
                         drawCircle(
                             color = Color(point.color),
                             radius = state.currentWidth / 2,
@@ -173,8 +174,8 @@ private fun Drawer(
                     state = state,
                     onAction = onAction,
                     modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 8.dp)
+                        .align(Alignment.BottomEnd)
+                        .padding(bottom = 8.dp, end = 8.dp)
                 )
             }
         }
@@ -222,7 +223,7 @@ private fun UpperRow(
                 Icon(
                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_remove_frame),
                     contentDescription = null,
-                    tint = if (state.frames.isNotEmpty()) MaterialTheme.colorScheme.onPrimary else ColorDisabled,
+                    tint = if (state.frames.size > 1) MaterialTheme.colorScheme.onPrimary else ColorDisabled,
                     modifier = Modifier
                         .size(32.dp)
                         .clickable { onAction(ScreenAction.OnRemoveCurrentFrameButtonClicked) }
@@ -279,48 +280,62 @@ private fun BottomRow(
     onAction: (ScreenAction) -> Unit,
 ) {
     Row(
-        Modifier
+        modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 16.dp)
-            .size(32.dp),
-        horizontalArrangement = Arrangement.Center
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         if (!state.isPlay) {
-            Icon(
-                imageVector = ImageVector.vectorResource(id = R.drawable.ic_pen),
-                contentDescription = null,
-                tint = if (state.selectedTool == Tools.PEN) ColorSelected else MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier
-                    .size(32.dp)
-                    .clickable { onAction(ScreenAction.OnToolClick(Tools.PEN)) }
-            )
-            Spacer(Modifier.width(16.dp))
-            Icon(
-                imageVector = ImageVector.vectorResource(id = R.drawable.ic_erase),
-                contentDescription = null,
-                tint = if (state.selectedTool == Tools.ERASER) ColorSelected else MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier
-                    .size(32.dp)
-                    .clickable { onAction(ScreenAction.OnToolClick(Tools.ERASER)) }
-            )
-            Spacer(Modifier.width(16.dp))
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .background(
-                        color = if (state.selectedTool == Tools.COLOR_PALETTE) ColorSelected else Color(
-                            state.currentColor
-                        ), shape = CircleShape
-                    )
-                    .clickable { onAction(ScreenAction.OnToolClick(Tools.COLOR_PALETTE)) }
+            Row(
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.Start
             ) {
+                Text("Frame #${state.currentFrame + 1} of ${state.frames.size}")
+            }
+
+            Row(
+                Modifier
+                    .weight(1f)
+                    .size(32.dp),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_pen),
+                    contentDescription = null,
+                    tint = if (state.selectedTool == Tools.PEN) ColorSelected else MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clickable { onAction(ScreenAction.OnToolClick(Tools.PEN)) }
+                )
+                Spacer(Modifier.width(16.dp))
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_erase),
+                    contentDescription = null,
+                    tint = if (state.selectedTool == Tools.ERASER) ColorSelected else MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clickable { onAction(ScreenAction.OnToolClick(Tools.ERASER)) }
+                )
+                Spacer(Modifier.width(16.dp))
                 Box(
                     modifier = Modifier
-                        .size(28.dp)
-                        .background(color = Color(state.currentColor), shape = CircleShape)
-                        .align(Alignment.Center)
+                        .size(32.dp)
+                        .background(
+                            color = if (state.selectedTool == Tools.COLOR_PALETTE) ColorSelected else Color(
+                                state.currentColor
+                            ), shape = CircleShape
+                        )
                         .clickable { onAction(ScreenAction.OnToolClick(Tools.COLOR_PALETTE)) }
-                )
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .background(color = Color(state.currentColor), shape = CircleShape)
+                            .align(Alignment.Center)
+                            .clickable { onAction(ScreenAction.OnToolClick(Tools.COLOR_PALETTE)) }
+                    )
+                }
             }
         }
     }
