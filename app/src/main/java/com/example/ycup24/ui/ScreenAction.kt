@@ -26,4 +26,5 @@ sealed interface ScreenAction {
     data class OnFramePicked(val position: Int): ScreenAction
     data object DuplicateCurrentFrame : ScreenAction
     data object RemoveAllFrames : ScreenAction
+    data class OnSpeedClickedAction(val speed: Int) : ScreenAction
 }

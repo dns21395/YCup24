@@ -40,6 +40,10 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
             }
         }
 
+        if (state.value.selectedTool == Tools.SPEED && action !is ScreenAction.OnToolClick) {
+            _state.update { it.copy(selectedTool = Tools.PEN) }
+        }
+
         when (action) {
             is ScreenAction.OnToolClick -> {
                 onToolClick(action.tool)
@@ -165,6 +169,14 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                     )
                 }
             }
+
+            is ScreenAction.OnSpeedClickedAction -> {
+                _state.update { currentState ->
+                    currentState.copy(
+                        currentSpeed = action.speed
+                    )
+                }
+            }
         }
     }
 
@@ -197,6 +209,14 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                     currentState.copy(
                         selectedTool = tool,
                         isColorPaletteVisible = true
+                    )
+                }
+            }
+
+            Tools.SPEED -> {
+                _state.update { currentState ->
+                    currentState.copy(
+                        selectedTool = if (currentState.selectedTool == Tools.SPEED) Tools.PEN else Tools.SPEED
                     )
                 }
             }
@@ -348,7 +368,7 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
 
     private fun playAnimation() {
         animationJob = viewModelScope.launch {
-            val frameDelay = 700L
+            val frameDelay = 400L * state.value.currentSpeed
             val size = state.value.frames.size
             var k = 0
             while (isActive) {
