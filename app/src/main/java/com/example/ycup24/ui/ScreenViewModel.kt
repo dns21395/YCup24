@@ -21,7 +21,7 @@ import kotlin.math.sqrt
 class ScreenViewModel @Inject constructor() : ViewModel() {
 
     companion object {
-        private const val VAL_ERASER_RADIUS = 20.0f
+        private const val VAL_ERASER_RADIUS = 25.0f
     }
 
     private val _state = MutableStateFlow(ScreenState())
