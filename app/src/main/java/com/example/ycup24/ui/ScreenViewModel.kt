@@ -177,6 +177,14 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                     )
                 }
             }
+
+            is ScreenAction.ShowGenerateFrameDialog -> {
+                _state.update { currentState ->
+                    currentState.copy(
+                        showFrameGeneratorDialog = !currentState.showFrameGeneratorDialog
+                    )
+                }
+            }
         }
     }
 

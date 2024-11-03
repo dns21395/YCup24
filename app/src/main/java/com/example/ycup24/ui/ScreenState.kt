@@ -23,4 +23,5 @@ data class ScreenState(
     val isColorPaletteVisible: Boolean = false,
     val isExtraColorPaletteVisible: Boolean = false,
     val isShowFramesListScreen: Boolean = false,
+    val showFrameGeneratorDialog: Boolean = false,
 )

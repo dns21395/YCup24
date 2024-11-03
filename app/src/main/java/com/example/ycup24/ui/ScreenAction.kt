@@ -27,4 +27,5 @@ sealed interface ScreenAction {
     data object DuplicateCurrentFrame : ScreenAction
     data object RemoveAllFrames : ScreenAction
     data class OnSpeedClickedAction(val speed: Int) : ScreenAction
+    data object ShowGenerateFrameDialog : ScreenAction
 }
