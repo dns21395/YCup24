@@ -132,6 +132,15 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                     )
                 }
             }
+
+            is ScreenAction.OnFramePicked -> {
+                _state.update {
+                    it.copy(
+                        currentFrame = action.position,
+                        isShowFramesListScreen = false
+                    )
+                }
+            }
         }
     }
 
@@ -243,7 +252,11 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                     statePointers = currentState.frames[currentState.currentFrame]
                 )
                 currentState.copy(
-                    frames = updatePointersInFrames(currentState.frames, currentState.currentFrame, triple.third),
+                    frames = updatePointersInFrames(
+                        currentState.frames,
+                        currentState.currentFrame,
+                        triple.third
+                    ),
                     backActions = triple.first,
                     nextActions = triple.second
                 )
@@ -265,7 +278,11 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                     statePointers = currentState.frames[currentState.currentFrame]
                 )
                 currentState.copy(
-                    frames = updatePointersInFrames(currentState.frames, currentState.currentFrame, triple.third),
+                    frames = updatePointersInFrames(
+                        currentState.frames,
+                        currentState.currentFrame,
+                        triple.third
+                    ),
                     backActions = triple.second,
                     nextActions = triple.first
                 )
@@ -293,10 +310,10 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
         _state.update { currentState ->
             if (currentState.frames.size > 1) {
                 val frames = currentState.frames.toMutableList()
-                frames.removeLast()
+                frames.removeAt(currentState.currentFrame)
 
                 currentState.copy(
-                    currentFrame = currentState.currentFrame - 1,
+                    currentFrame = if (currentState.currentFrame == 0) 0 else currentState.currentFrame - 1,
                     frames = frames
                 )
             } else {
@@ -313,6 +330,13 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
             while (isActive) {
                 if (k == size) {
                     k = 0
+                    _state.update { currentState ->
+                        currentState.copy(
+                            isPlay = true,
+                            animationPointers = currentState.frames[k]
+                        )
+                    }
+                    k++
                 } else {
                     _state.update { currentState ->
                         currentState.copy(

@@ -265,7 +265,7 @@ private fun UpperRow(
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_play),
                 contentDescription = null,
-                tint = if (!state.isPlay && state.frames.isNotEmpty()) MaterialTheme.colorScheme.onPrimary else ColorDisabled,
+                tint = if (!state.isPlay && state.frames.size > 1) MaterialTheme.colorScheme.onPrimary else ColorDisabled,
                 modifier = Modifier
                     .size(32.dp)
                     .clickable { onAction(ScreenAction.OnPlayAnimationButtonClicked) }

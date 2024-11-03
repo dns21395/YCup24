@@ -23,4 +23,5 @@ sealed interface ScreenAction {
         val width: Int,
         val height: Int,
     ) : ScreenAction
+    data class OnFramePicked(val position: Int): ScreenAction
 }

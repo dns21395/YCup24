@@ -60,6 +60,7 @@ fun FramesScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clickable { onAction(ScreenAction.OnFramePicked(index)) }
                 ) {
                     Row {
                         FrameCard(
