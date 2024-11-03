@@ -141,6 +141,19 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                     )
                 }
             }
+
+            is ScreenAction.DuplicateCurrentFrame -> {
+                _state.update { currentState ->
+                    val frames = currentState.frames.toMutableList()
+                    val points = currentState.frames[currentState.currentFrame]
+                    frames.add(currentState.currentFrame + 1, points)
+
+                    currentState.copy(
+                        frames = frames,
+                        currentFrame = currentState.currentFrame + 1,
+                    )
+                }
+            }
         }
     }
 

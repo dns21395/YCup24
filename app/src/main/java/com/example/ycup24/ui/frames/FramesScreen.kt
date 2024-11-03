@@ -98,6 +98,7 @@ fun FrameCard(
             "Frame #$index", modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .padding(end = 16.dp),
+            color = Color.Black,
             fontSize = 32.sp
         )
 

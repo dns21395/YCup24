@@ -318,6 +318,15 @@ private fun BottomRow(
                         .clickable { onAction(ScreenAction.OnToolClick(Tools.ERASER)) }
                 )
                 Spacer(Modifier.width(16.dp))
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_duplicate),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clickable { onAction(ScreenAction.DuplicateCurrentFrame) }
+                )
+                Spacer(Modifier.width(16.dp))
                 Box(
                     modifier = Modifier
                         .size(32.dp)
