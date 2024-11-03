@@ -4,4 +4,5 @@ enum class Tools {
     PEN,
     ERASER,
     COLOR_PALETTE,
+    SPEED
 }

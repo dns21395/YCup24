@@ -9,6 +9,7 @@ data class ScreenState(
     val previewFrameWidth: Float = 0.0f,
     val previewFragmentHeight: Float = 0.0f,
     val currentFrame: Int = 0,
+    val currentSpeed: Int = 1,
     val currentWidth: Float = 15.0f,
     val currentColor: ULong = BrushColorBlue.value,
     val backActions: List<Pair<Tools, List<Point>>> = emptyList(),

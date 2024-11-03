@@ -178,6 +178,15 @@ private fun Drawer(
                         .padding(bottom = 8.dp, end = 8.dp)
                 )
             }
+            if (state.selectedTool == Tools.SPEED) {
+                SpeedCard(
+                    state = state,
+                    onAction = onAction,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(bottom = 8.dp, end = 8.dp)
+                )
+            }
         }
     }
 }
@@ -288,7 +297,6 @@ private fun BottomRow(
     ) {
         if (!state.isPlay) {
             Row(
-                modifier = Modifier.weight(1f),
                 horizontalArrangement = Arrangement.Start
             ) {
                 Text("Frame #${state.currentFrame + 1} of ${state.frames.size}")
@@ -296,8 +304,7 @@ private fun BottomRow(
 
             Row(
                 Modifier
-                    .weight(1f)
-                    .size(32.dp),
+                    .weight(1f),
                 horizontalArrangement = Arrangement.End
             ) {
                 Icon(
@@ -308,7 +315,7 @@ private fun BottomRow(
                         .size(32.dp)
                         .clickable { onAction(ScreenAction.OnToolClick(Tools.PEN)) }
                 )
-                Spacer(Modifier.width(16.dp))
+                Spacer(Modifier.width(8.dp))
                 Icon(
                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_erase),
                     contentDescription = null,
@@ -317,7 +324,25 @@ private fun BottomRow(
                         .size(32.dp)
                         .clickable { onAction(ScreenAction.OnToolClick(Tools.ERASER)) }
                 )
-                Spacer(Modifier.width(16.dp))
+                Spacer(Modifier.width(8.dp))
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_duplicate),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clickable { onAction(ScreenAction.DuplicateCurrentFrame) }
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    "${state.currentSpeed}x",
+                    modifier = Modifier
+                        .size(24.dp)
+                        .align(Alignment.CenterVertically)
+                        .clickable { onAction(ScreenAction.OnToolClick(Tools.SPEED)) },
+                    color = if (state.selectedTool == Tools.SPEED) ColorSelected else MaterialTheme.colorScheme.onPrimary
+                )
+                Spacer(Modifier.width(8.dp))
                 Box(
                     modifier = Modifier
                         .size(32.dp)
@@ -417,6 +442,50 @@ fun BrushColor(
             .background(color = color, shape = CircleShape)
             .clickable { onAction(ScreenAction.OnColorPicked(color.value)) }
     )
+}
+
+@Composable
+fun SpeedCard(
+    state: ScreenState,
+    onAction: (ScreenAction) -> Unit,
+    modifier: Modifier
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = Color.DarkGray.copy(alpha = 0.8f),
+        )
+    ) {
+        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            for (speed in listOf(1, 2, 3, 4)) {
+                if (speed == state.currentSpeed) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(color = Color.White, shape = CircleShape)
+                    ) {
+                        Text(
+                            "${speed}x",
+                            modifier = Modifier.align(Alignment.Center),
+                            color = Color.Black
+                        )
+                    }
+                    Spacer(Modifier.width(16.dp))
+                } else {
+                    Text(
+                        "${speed}x",
+                        modifier = Modifier.clickable {
+                            onAction(
+                                ScreenAction.OnSpeedClickedAction(speed)
+                            )
+                        },
+                        color = Color.White
+                    )
+                    Spacer(Modifier.width(16.dp))
+                }
+            }
+        }
+    }
 }
 
 @PreviewLightDark

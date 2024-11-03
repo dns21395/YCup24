@@ -21,7 +21,7 @@ import kotlin.math.sqrt
 class ScreenViewModel @Inject constructor() : ViewModel() {
 
     companion object {
-        private const val VAL_ERASER_RADIUS = 20.0f
+        private const val VAL_ERASER_RADIUS = 25.0f
     }
 
     private val _state = MutableStateFlow(ScreenState())
@@ -38,6 +38,10 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                     isExtraColorPaletteVisible = false
                 )
             }
+        }
+
+        if (state.value.selectedTool == Tools.SPEED && action !is ScreenAction.OnToolClick) {
+            _state.update { it.copy(selectedTool = Tools.PEN) }
         }
 
         when (action) {
@@ -141,6 +145,38 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                     )
                 }
             }
+
+            is ScreenAction.DuplicateCurrentFrame -> {
+                _state.update { currentState ->
+                    val frames = currentState.frames.toMutableList()
+                    val points = currentState.frames[currentState.currentFrame]
+                    frames.add(currentState.currentFrame + 1, points)
+
+                    currentState.copy(
+                        frames = frames,
+                        currentFrame = currentState.currentFrame + 1,
+                    )
+                }
+            }
+
+            is ScreenAction.RemoveAllFrames -> {
+                _state.update { currentState ->
+                    ScreenState().copy(
+                        previewFrameWidth = currentState.previewFrameWidth,
+                        previewFragmentHeight = currentState.previewFragmentHeight,
+                        currentColor = currentState.currentColor,
+                        isShowFramesListScreen = true
+                    )
+                }
+            }
+
+            is ScreenAction.OnSpeedClickedAction -> {
+                _state.update { currentState ->
+                    currentState.copy(
+                        currentSpeed = action.speed
+                    )
+                }
+            }
         }
     }
 
@@ -173,6 +209,14 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                     currentState.copy(
                         selectedTool = tool,
                         isColorPaletteVisible = true
+                    )
+                }
+            }
+
+            Tools.SPEED -> {
+                _state.update { currentState ->
+                    currentState.copy(
+                        selectedTool = if (currentState.selectedTool == Tools.SPEED) Tools.PEN else Tools.SPEED
                     )
                 }
             }
@@ -324,7 +368,7 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
 
     private fun playAnimation() {
         animationJob = viewModelScope.launch {
-            val frameDelay = 700L
+            val frameDelay = 400L * state.value.currentSpeed
             val size = state.value.frames.size
             var k = 0
             while (isActive) {

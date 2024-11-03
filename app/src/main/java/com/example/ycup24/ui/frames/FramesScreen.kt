@@ -2,6 +2,7 @@ package com.example.ycup24.ui.frames
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -44,16 +45,26 @@ fun FramesScreen(
     modifier: Modifier
 ) {
     Column(
-        modifier = modifier.padding(16.dp)
+        modifier = modifier.padding(16.dp),
     ) {
-        Icon(
-            imageVector = ImageVector.vectorResource(id = R.drawable.ic_arrow_back),
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onPrimary,
-            modifier = Modifier
-                .size(32.dp)
-                .clickable { onAction(ScreenAction.OnFramesGroupClicked) }
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.ic_arrow_back),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable { onAction(ScreenAction.OnFramesGroupClicked) }
+            )
+            Text(
+                text = "Delete all frames",
+                color = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.clickable { onAction(ScreenAction.RemoveAllFrames) })
+        }
         LazyColumn {
             itemsIndexed(state.frames) { index, frame ->
                 Spacer(Modifier.height(16.dp))
@@ -98,6 +109,7 @@ fun FrameCard(
             "Frame #$index", modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .padding(end = 16.dp),
+            color = Color.Black,
             fontSize = 32.sp
         )
 
