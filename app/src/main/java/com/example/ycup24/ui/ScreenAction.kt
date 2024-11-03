@@ -25,4 +25,5 @@ sealed interface ScreenAction {
     ) : ScreenAction
     data class OnFramePicked(val position: Int): ScreenAction
     data object DuplicateCurrentFrame : ScreenAction
+    data object RemoveAllFrames : ScreenAction
 }

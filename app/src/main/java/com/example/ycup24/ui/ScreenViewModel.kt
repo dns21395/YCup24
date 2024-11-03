@@ -154,6 +154,17 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                     )
                 }
             }
+
+            is ScreenAction.RemoveAllFrames -> {
+                _state.update { currentState ->
+                    ScreenState().copy(
+                        previewFrameWidth = currentState.previewFrameWidth,
+                        previewFragmentHeight = currentState.previewFragmentHeight,
+                        currentColor = currentState.currentColor,
+                        isShowFramesListScreen = true
+                    )
+                }
+            }
         }
     }
 
