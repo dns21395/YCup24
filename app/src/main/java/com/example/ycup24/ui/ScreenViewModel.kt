@@ -209,7 +209,7 @@ class ScreenViewModel @Inject constructor(
                                 currentState.frameWidth,
                                 currentState.frameHeight,
                                 currentState.brushRadius,
-                                currentState.currentSpeed * 400
+                                state.value.speedList[state.value.currentSpeedIndex].second.toInt()
                             )
                         }
                     }

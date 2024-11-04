@@ -4,10 +4,6 @@ import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import android.os.Build
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -402,41 +398,40 @@ private fun BottomRow(
         } else {
             Spacer(Modifier.height(32.dp))
         }
-    )
-
+    }
 }
 
-    @Composable
-    private fun Gif(
-        saveGif: () -> Unit
-    ) {
-        val context = LocalContext.current
-        val permissionResultLauncher = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.RequestPermission(),
-            onResult = { isGranted ->
-                if (isGranted) {
+@Composable
+private fun Gif(
+    saveGif: () -> Unit
+) {
+    val context = LocalContext.current
+    val permissionResultLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            if (isGranted) {
+                saveGif.invoke()
+                Toast.makeText(context, "Check downloads folder", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "Give permission to save GIF", Toast.LENGTH_SHORT).show()
+            }
+        }
+    )
+    Icon(
+        imageVector = ImageVector.vectorResource(id = R.drawable.ic_gif),
+        contentDescription = null,
+        tint = MaterialTheme.colorScheme.onPrimary,
+        modifier = Modifier
+            .size(32.dp)
+            .clickable {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     saveGif.invoke()
-                    Toast.makeText(context, "Check downloads folder", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(context, "Give permission to save GIF", Toast.LENGTH_SHORT).show()
+                    permissionResultLauncher.launch(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 }
             }
-        )
-        Icon(
-            imageVector = ImageVector.vectorResource(id = R.drawable.ic_gif),
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onPrimary,
-            modifier = Modifier
-                .size(32.dp)
-                .clickable {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        saveGif.invoke()
-                    } else {
-                        permissionResultLauncher.launch(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    }
-                }
-        )
-    }
+    )
+}
 
 @Composable
 fun ExtraColorPalette(
