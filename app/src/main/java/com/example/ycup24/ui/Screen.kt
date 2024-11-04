@@ -546,7 +546,7 @@ fun GenerateFramesDialog(
                     Text("Cancel")
                 }
                 TextButton(
-                    onClick = { onAction(ScreenAction.ShowGenerateFrameDialog) },
+                    onClick = { onAction(ScreenAction.GenerateFramesClicked(generatorSize)) },
                 ) {
                     Text("Generate")
                 }
