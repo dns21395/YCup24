@@ -17,13 +17,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -39,6 +46,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toOffset
+import androidx.compose.ui.window.Dialog
 import com.example.ycup24.R
 import com.example.ycup24.core.ui.theme.BrushColorBlue
 import com.example.ycup24.core.ui.theme.BrushColorRed
@@ -47,6 +55,7 @@ import com.example.ycup24.core.ui.theme.ColorSelected
 import com.example.ycup24.core.ui.theme.YCup24Theme
 import com.example.ycup24.core.ui.theme.colors
 import com.example.ycup24.ui.model.Tools
+import kotlin.math.roundToInt
 
 @Composable
 fun Screen(
@@ -58,6 +67,10 @@ fun Screen(
         UpperRow(state, onAction)
         Drawer(state, onAction, Modifier.weight(1f))
         BottomRow(state, onAction)
+    }
+
+    if (state.showFrameGeneratorDialog) {
+        GenerateFramesDialog(onAction)
     }
 }
 
@@ -326,6 +339,15 @@ private fun BottomRow(
                 )
                 Spacer(Modifier.width(8.dp))
                 Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_animated_images),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clickable { onAction(ScreenAction.ShowGenerateFrameDialog) }
+                )
+                Spacer(Modifier.width(8.dp))
+                Icon(
                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_duplicate),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimary,
@@ -482,6 +504,51 @@ fun SpeedCard(
                         color = Color.White
                     )
                     Spacer(Modifier.width(16.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun GenerateFramesDialog(
+    onAction: (ScreenAction) -> Unit,
+) {
+    Dialog(onDismissRequest = { onAction(ScreenAction.ShowGenerateFrameDialog) }) {
+        var generatorSize by remember { mutableIntStateOf(1) }
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.secondary,
+            )
+        ) {
+            Column {
+                Text("Generate $generatorSize frames", modifier = Modifier.padding(16.dp))
+                Slider(
+                    value = generatorSize.toFloat(),
+                    onValueChange = { generatorSize = it.roundToInt() },
+                    valueRange = 1f..100f,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                TextButton(
+                    onClick = { onAction(ScreenAction.ShowGenerateFrameDialog) },
+                ) {
+                    Text("Cancel")
+                }
+                TextButton(
+                    onClick = { onAction(ScreenAction.GenerateFramesClicked(generatorSize)) },
+                ) {
+                    Text("Generate")
                 }
             }
         }

@@ -8,6 +8,8 @@ import com.example.ycup24.ui.model.Tools
 data class ScreenState(
     val previewFrameWidth: Float = 0.0f,
     val previewFragmentHeight: Float = 0.0f,
+    val frameWidth: Int = 0,
+    val frameHeight: Int = 0,
     val currentFrame: Int = 0,
     val currentSpeed: Int = 1,
     val currentWidth: Float = 15.0f,
@@ -23,4 +25,5 @@ data class ScreenState(
     val isColorPaletteVisible: Boolean = false,
     val isExtraColorPaletteVisible: Boolean = false,
     val isShowFramesListScreen: Boolean = false,
+    val showFrameGeneratorDialog: Boolean = false,
 )

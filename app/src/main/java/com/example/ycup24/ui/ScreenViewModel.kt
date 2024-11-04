@@ -1,9 +1,11 @@
 package com.example.ycup24.ui
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntOffset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.ycup24.core.ui.theme.colors
 import com.example.ycup24.ui.model.Line
 import com.example.ycup24.ui.model.Point
 import com.example.ycup24.ui.model.Tools
@@ -17,6 +19,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.sqrt
+import kotlin.random.Random
 
 class ScreenViewModel @Inject constructor() : ViewModel() {
 
@@ -133,6 +136,8 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                     it.copy(
                         previewFrameWidth = action.width * 0.25f,
                         previewFragmentHeight = action.height * 0.25f,
+                        frameWidth = action.width,
+                        frameHeight = action.height
                     )
                 }
             }
@@ -176,6 +181,18 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
                         currentSpeed = action.speed
                     )
                 }
+            }
+
+            is ScreenAction.ShowGenerateFrameDialog -> {
+                _state.update { currentState ->
+                    currentState.copy(
+                        showFrameGeneratorDialog = !currentState.showFrameGeneratorDialog
+                    )
+                }
+            }
+
+            is ScreenAction.GenerateFramesClicked -> {
+                generateFrames(action.count)
             }
         }
     }
@@ -496,6 +513,37 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
         val _frames = frames.toMutableList()
         _frames[currentFrame] = pointers
         return _frames
+    }
+
+    private fun generateFrames(framesCount: Int) {
+        val currentFrames = state.value.frames.toMutableList()
+        val newFrames: ArrayList<List<Point>> = arrayListOf()
+        val frameWidth = state.value.frameWidth
+        val frameHeight = state.value.frameHeight
+
+        for (i in 0 until framesCount) {
+            val linesCount = Random.nextInt(2 ,13)
+            val lines: ArrayList<Line> = arrayListOf()
+
+            for (j in 0 until linesCount) {
+                val start = IntOffset(Random.nextInt(frameWidth), Random.nextInt(frameHeight))
+                val end = IntOffset(Random.nextInt(frameWidth), Random.nextInt(frameHeight))
+                lines.add(Line(start, end))
+            }
+
+            val points = getLinePoints(lines, Color(colors[Random.nextInt(colors.size)]).value)
+            newFrames.add(points)
+        }
+
+        currentFrames.addAll(state.value.currentFrame + 1, newFrames.toList())
+
+        _state.update { currentState ->
+            currentState.copy(
+                frames = currentFrames,
+                currentFrame = currentState.currentFrame + newFrames.size,
+                showFrameGeneratorDialog = false
+            )
+        }
     }
 }
 
