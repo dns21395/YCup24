@@ -171,6 +171,12 @@ private fun Drawer(
                         )
                     }
                 }
+                Text(
+                    "Frame #${state.currentFrame + 1} of ${state.frames.size}",
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(16.dp)
+                )
             } else {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     state.animationPointers.forEach { point ->
@@ -305,85 +311,75 @@ private fun BottomRow(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (!state.isPlay) {
-            Row(
-                horizontalArrangement = Arrangement.Start
+            Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.ic_pen),
+                contentDescription = null,
+                tint = if (state.selectedTool == Tools.PEN) ColorSelected else MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable { onAction(ScreenAction.OnToolClick(Tools.PEN)) }
+            )
+            Spacer(Modifier.width(8.dp))
+            Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.ic_erase),
+                contentDescription = null,
+                tint = if (state.selectedTool == Tools.ERASER) ColorSelected else MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable { onAction(ScreenAction.OnToolClick(Tools.ERASER)) }
+            )
+            Spacer(Modifier.width(8.dp))
+            Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.ic_animated_images),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable { onAction(ScreenAction.ShowGenerateFrameDialog) }
+            )
+            Spacer(Modifier.width(8.dp))
+            Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.ic_duplicate),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable { onAction(ScreenAction.DuplicateCurrentFrame) }
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                state.speedList[state.currentSpeedIndex].first,
+                modifier = Modifier
+                    .size(24.dp)
+                    .align(Alignment.CenterVertically)
+                    .clickable { onAction(ScreenAction.OnToolClick(Tools.SPEED)) },
+                color = if (state.selectedTool == Tools.SPEED) ColorSelected else MaterialTheme.colorScheme.onPrimary
+            )
+            Spacer(Modifier.width(8.dp))
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .background(
+                        color = if (state.selectedTool == Tools.COLOR_PALETTE) ColorSelected else Color(
+                            state.currentColor
+                        ), shape = CircleShape
+                    )
+                    .clickable { onAction(ScreenAction.OnToolClick(Tools.COLOR_PALETTE)) }
             ) {
-                Text("Frame #${state.currentFrame + 1} of ${state.frames.size}")
-            }
-
-            Row(
-                Modifier
-                    .weight(1f),
-                horizontalArrangement = Arrangement.End
-            ) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_pen),
-                    contentDescription = null,
-                    tint = if (state.selectedTool == Tools.PEN) ColorSelected else MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clickable { onAction(ScreenAction.OnToolClick(Tools.PEN)) }
-                )
-                Spacer(Modifier.width(8.dp))
-                Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_erase),
-                    contentDescription = null,
-                    tint = if (state.selectedTool == Tools.ERASER) ColorSelected else MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clickable { onAction(ScreenAction.OnToolClick(Tools.ERASER)) }
-                )
-                Spacer(Modifier.width(8.dp))
-                Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_animated_images),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clickable { onAction(ScreenAction.ShowGenerateFrameDialog) }
-                )
-                Spacer(Modifier.width(8.dp))
-                Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_duplicate),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clickable { onAction(ScreenAction.DuplicateCurrentFrame) }
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    "${state.currentSpeed}x",
-                    modifier = Modifier
-                        .size(24.dp)
-                        .align(Alignment.CenterVertically)
-                        .clickable { onAction(ScreenAction.OnToolClick(Tools.SPEED)) },
-                    color = if (state.selectedTool == Tools.SPEED) ColorSelected else MaterialTheme.colorScheme.onPrimary
-                )
-                Spacer(Modifier.width(8.dp))
                 Box(
                     modifier = Modifier
-                        .size(32.dp)
-                        .background(
-                            color = if (state.selectedTool == Tools.COLOR_PALETTE) ColorSelected else Color(
-                                state.currentColor
-                            ), shape = CircleShape
-                        )
+                        .size(28.dp)
+                        .background(color = Color(state.currentColor), shape = CircleShape)
+                        .align(Alignment.Center)
                         .clickable { onAction(ScreenAction.OnToolClick(Tools.COLOR_PALETTE)) }
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(28.dp)
-                            .background(color = Color(state.currentColor), shape = CircleShape)
-                            .align(Alignment.Center)
-                            .clickable { onAction(ScreenAction.OnToolClick(Tools.COLOR_PALETTE)) }
-                    )
-                }
+                )
             }
+        } else {
+            Spacer(Modifier.height(32.dp))
         }
     }
 }
@@ -479,15 +475,17 @@ fun SpeedCard(
         )
     ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            for (speed in listOf(1, 2, 3, 4)) {
-                if (speed == state.currentSpeed) {
+            for (i in 0 until state.speedList.size) {
+                val (text, speed) = state.speedList[i]
+                val currentSpeed = state.speedList[state.currentSpeedIndex].second
+                if (speed == currentSpeed) {
                     Box(
                         modifier = Modifier
                             .size(40.dp)
                             .background(color = Color.White, shape = CircleShape)
                     ) {
                         Text(
-                            "${speed}x",
+                            text,
                             modifier = Modifier.align(Alignment.Center),
                             color = Color.Black
                         )
@@ -495,10 +493,10 @@ fun SpeedCard(
                     Spacer(Modifier.width(16.dp))
                 } else {
                     Text(
-                        "${speed}x",
+                        text,
                         modifier = Modifier.clickable {
                             onAction(
-                                ScreenAction.OnSpeedClickedAction(speed)
+                                ScreenAction.OnSpeedClickedAction(i)
                             )
                         },
                         color = Color.White
