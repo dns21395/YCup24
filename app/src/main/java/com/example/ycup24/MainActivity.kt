@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.ycup24.core.ui.theme.YCup24Theme
 import com.example.ycup24.di.DaggerAppComponent
@@ -27,8 +28,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             YCup24Theme {
+                val context = LocalContext.current
                 val viewModel = daggerViewModel(key = "viewmodel") {
-                    DaggerAppComponent.create().viewModel()
+                    DaggerAppComponent.factory().create(context).viewModel()
                 }
                 val state by viewModel.state.collectAsState()
                 val colorScheme = MaterialTheme.colorScheme

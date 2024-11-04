@@ -5,10 +5,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntOffset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.ycup24.core.data.repository.SaveGifRepository
 import com.example.ycup24.core.ui.theme.colors
 import com.example.ycup24.ui.model.Line
 import com.example.ycup24.ui.model.Point
 import com.example.ycup24.ui.model.Tools
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,12 +18,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.sqrt
 import kotlin.random.Random
 
-class ScreenViewModel @Inject constructor() : ViewModel() {
+class ScreenViewModel @Inject constructor(
+    private val saveGifRepository: SaveGifRepository
+) : ViewModel() {
 
     companion object {
         private const val VAL_ERASER_RADIUS = 25.0f
@@ -193,6 +198,22 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
 
             is ScreenAction.GenerateFramesClicked -> {
                 generateFrames(action.count)
+            }
+
+            is ScreenAction.CreateGifActionClicked -> {
+                viewModelScope.launch {
+                    withContext(Dispatchers.IO) {
+                        state.value.let { currentState ->
+                            saveGifRepository.saveGif(
+                                currentState.frames,
+                                currentState.frameWidth,
+                                currentState.frameHeight,
+                                currentState.brushRadius,
+                                state.value.speedList[state.value.currentSpeedIndex].second.toInt()
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -522,7 +543,7 @@ class ScreenViewModel @Inject constructor() : ViewModel() {
         val frameHeight = state.value.frameHeight
 
         for (i in 0 until framesCount) {
-            val linesCount = Random.nextInt(2 ,13)
+            val linesCount = Random.nextInt(2, 13)
             val lines: ArrayList<Line> = arrayListOf()
 
             for (j in 0 until linesCount) {

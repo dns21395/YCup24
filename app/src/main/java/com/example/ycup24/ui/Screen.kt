@@ -1,5 +1,9 @@
 package com.example.ycup24.ui
 
+import android.os.Build
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -41,6 +45,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -146,7 +152,7 @@ private fun Drawer(
                         state.frames[state.currentFrame - 1].forEach { point ->
                             drawCircle(
                                 color = Color(point.color),
-                                radius = state.currentWidth / 2,
+                                radius = state.brushRadius / 2,
                                 center = point.position.toOffset(),
                             )
                         }
@@ -158,7 +164,7 @@ private fun Drawer(
                             color = Color(state.currentColor),
                             start = line.start.toOffset(),
                             end = line.end.toOffset(),
-                            strokeWidth = state.currentWidth,
+                            strokeWidth = state.brushRadius,
                             cap = StrokeCap.Round
                         )
                     }
@@ -166,7 +172,7 @@ private fun Drawer(
                     state.frames[state.currentFrame].forEach { point ->
                         drawCircle(
                             color = Color(point.color),
-                            radius = state.currentWidth / 2,
+                            radius = state.brushRadius / 2,
                             center = point.position.toOffset(),
                         )
                     }
@@ -182,7 +188,7 @@ private fun Drawer(
                     state.animationPointers.forEach { point ->
                         drawCircle(
                             color = Color(point.color),
-                            radius = state.currentWidth / 2,
+                            radius = state.brushRadius / 2,
                             center = point.position.toOffset(),
                         )
                     }
@@ -204,6 +210,15 @@ private fun Drawer(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(bottom = 8.dp, end = 8.dp)
+                )
+            }
+
+            if (!state.isPlay) {
+                Text(
+                    "Frame #${state.currentFrame + 1} of ${state.frames.size}",
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(16.dp)
                 )
             }
         }
@@ -360,6 +375,8 @@ private fun BottomRow(
                 color = if (state.selectedTool == Tools.SPEED) ColorSelected else MaterialTheme.colorScheme.onPrimary
             )
             Spacer(Modifier.width(8.dp))
+            Gif { onAction(ScreenAction.CreateGifActionClicked) }
+            Spacer(Modifier.width(8.dp))
             Box(
                 modifier = Modifier
                     .size(32.dp)
@@ -382,6 +399,38 @@ private fun BottomRow(
             Spacer(Modifier.height(32.dp))
         }
     }
+}
+
+@Composable
+private fun Gif(
+    saveGif: () -> Unit
+) {
+    val context = LocalContext.current
+    val permissionResultLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            if (isGranted) {
+                saveGif.invoke()
+                Toast.makeText(context, "Check downloads folder", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "Give permission to save GIF", Toast.LENGTH_SHORT).show()
+            }
+        }
+    )
+    Icon(
+        imageVector = ImageVector.vectorResource(id = R.drawable.ic_gif),
+        contentDescription = null,
+        tint = MaterialTheme.colorScheme.onPrimary,
+        modifier = Modifier
+            .size(32.dp)
+            .clickable {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    saveGif.invoke()
+                } else {
+                    permissionResultLauncher.launch(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                }
+            }
+    )
 }
 
 @Composable
