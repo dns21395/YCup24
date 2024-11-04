@@ -1,5 +1,6 @@
 package com.example.ycup24.ui
 
+import android.widget.Toast
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -41,6 +42,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -342,19 +344,22 @@ private fun BottomRow(
                     .clickable { onAction(ScreenAction.ShowGenerateFrameDialog) }
             )
             Spacer(Modifier.width(8.dp))
+            val context = LocalContext.current
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_duplicate),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier
                     .size(32.dp)
-                    .clickable { onAction(ScreenAction.DuplicateCurrentFrame) }
+                    .clickable {
+                        onAction(ScreenAction.DuplicateCurrentFrame)
+                        Toast.makeText(context, "previous frame duplicated", Toast.LENGTH_SHORT).show()
+                    }
             )
             Spacer(Modifier.width(8.dp))
             Text(
-                state.speedList[state.currentSpeedIndex].first,
+                text = state.speedList[state.currentSpeedIndex].first,
                 modifier = Modifier
-                    .size(24.dp)
                     .align(Alignment.CenterVertically)
                     .clickable { onAction(ScreenAction.OnToolClick(Tools.SPEED)) },
                 color = if (state.selectedTool == Tools.SPEED) ColorSelected else MaterialTheme.colorScheme.onPrimary
@@ -431,7 +436,7 @@ fun ColorPalette(
                 Icon(
                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_palette),
                     contentDescription = null,
-                    tint = if (state.isExtraColorPaletteVisible) ColorSelected else MaterialTheme.colorScheme.onPrimary,
+                    tint = if (state.isExtraColorPaletteVisible) ColorSelected else Color.White,
                     modifier = Modifier
                         .size(32.dp)
                         .clickable { onAction(ScreenAction.OnExtraPaletteClicked) }

@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -60,10 +62,14 @@ fun FramesScreen(
                     .size(32.dp)
                     .clickable { onAction(ScreenAction.OnFramesGroupClicked) }
             )
-            Text(
-                text = "Delete all frames",
-                color = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.clickable { onAction(ScreenAction.RemoveAllFrames) })
+            Button(
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+                onClick = { onAction(ScreenAction.RemoveAllFrames) }) {
+                Text(
+                    text = "Delete all frames",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                )
+            }
         }
         LazyColumn {
             itemsIndexed(state.frames) { index, frame ->
