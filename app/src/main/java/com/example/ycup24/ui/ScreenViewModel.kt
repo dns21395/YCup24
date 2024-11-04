@@ -183,7 +183,7 @@ class ScreenViewModel @Inject constructor(
             is ScreenAction.OnSpeedClickedAction -> {
                 _state.update { currentState ->
                     currentState.copy(
-                        currentSpeed = action.speed
+                        currentSpeedIndex = action.speedIndex
                     )
                 }
             }
@@ -406,7 +406,7 @@ class ScreenViewModel @Inject constructor(
 
     private fun playAnimation() {
         animationJob = viewModelScope.launch {
-            val frameDelay = 400L * state.value.currentSpeed
+            val frameDelay = state.value.speedList[state.value.currentSpeedIndex].second
             val size = state.value.frames.size
             var k = 0
             while (isActive) {

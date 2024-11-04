@@ -4,6 +4,10 @@ import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import android.os.Build
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -45,6 +49,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
@@ -176,6 +181,12 @@ private fun Drawer(
                         )
                     }
                 }
+                Text(
+                    "Frame #${state.currentFrame + 1} of ${state.frames.size}",
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(16.dp)
+                )
             } else {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     state.animationPointers.forEach { point ->
@@ -322,105 +333,110 @@ private fun BottomRow(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = ImageVector.vectorResource(id = R.drawable.ic_pen),
-            contentDescription = null,
-            tint = if (state.selectedTool == Tools.PEN) ColorSelected else MaterialTheme.colorScheme.onPrimary,
-            modifier = Modifier
-                .size(32.dp)
-                .clickable { onAction(ScreenAction.OnToolClick(Tools.PEN)) }
-        )
-        Spacer(Modifier.width(8.dp))
-        Icon(
-            imageVector = ImageVector.vectorResource(id = R.drawable.ic_erase),
-            contentDescription = null,
-            tint = if (state.selectedTool == Tools.ERASER) ColorSelected else MaterialTheme.colorScheme.onPrimary,
-            modifier = Modifier
-                .size(32.dp)
-                .clickable { onAction(ScreenAction.OnToolClick(Tools.ERASER)) }
-        )
-        Spacer(Modifier.width(8.dp))
-        Icon(
-            imageVector = ImageVector.vectorResource(id = R.drawable.ic_animated_images),
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onPrimary,
-            modifier = Modifier
-                .size(32.dp)
-                .clickable { onAction(ScreenAction.ShowGenerateFrameDialog) }
-        )
-        Spacer(Modifier.width(8.dp))
-        Icon(
-            imageVector = ImageVector.vectorResource(id = R.drawable.ic_duplicate),
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onPrimary,
-            modifier = Modifier
-                .size(32.dp)
-                .clickable { onAction(ScreenAction.DuplicateCurrentFrame) }
-        )
-        Spacer(Modifier.width(8.dp))
-        Text(
-            "${state.currentSpeed}x",
-            modifier = Modifier
-                .size(24.dp)
-                .align(Alignment.CenterVertically)
-                .clickable { onAction(ScreenAction.OnToolClick(Tools.SPEED)) },
-            color = if (state.selectedTool == Tools.SPEED) ColorSelected else MaterialTheme.colorScheme.onPrimary
-        )
-        Spacer(Modifier.width(8.dp))
-        Gif { onAction(ScreenAction.CreateGifActionClicked) }
-        Spacer(Modifier.width(8.dp))
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .background(
-                    color = if (state.selectedTool == Tools.COLOR_PALETTE) ColorSelected else Color(
-                        state.currentColor
-                    ), shape = CircleShape
-                )
-                .clickable { onAction(ScreenAction.OnToolClick(Tools.COLOR_PALETTE)) }
-        ) {
+        if (!state.isPlay) {
+            Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.ic_pen),
+                contentDescription = null,
+                tint = if (state.selectedTool == Tools.PEN) ColorSelected else MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable { onAction(ScreenAction.OnToolClick(Tools.PEN)) }
+            )
+            Spacer(Modifier.width(8.dp))
+            Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.ic_erase),
+                contentDescription = null,
+                tint = if (state.selectedTool == Tools.ERASER) ColorSelected else MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable { onAction(ScreenAction.OnToolClick(Tools.ERASER)) }
+            )
+            Spacer(Modifier.width(8.dp))
+            Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.ic_animated_images),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable { onAction(ScreenAction.ShowGenerateFrameDialog) }
+            )
+            Spacer(Modifier.width(8.dp))
+            Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.ic_duplicate),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable { onAction(ScreenAction.DuplicateCurrentFrame) }
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                state.speedList[state.currentSpeedIndex].first,
+                modifier = Modifier
+                    .size(24.dp)
+                    .align(Alignment.CenterVertically)
+                    .clickable { onAction(ScreenAction.OnToolClick(Tools.SPEED)) },
+                color = if (state.selectedTool == Tools.SPEED) ColorSelected else MaterialTheme.colorScheme.onPrimary
+            )
+            Spacer(Modifier.width(8.dp))
+            Gif { onAction(ScreenAction.CreateGifActionClicked) }
+            Spacer(Modifier.width(8.dp))
             Box(
                 modifier = Modifier
-                    .size(28.dp)
-                    .background(color = Color(state.currentColor), shape = CircleShape)
-                    .align(Alignment.Center)
+                    .size(32.dp)
+                    .background(
+                        color = if (state.selectedTool == Tools.COLOR_PALETTE) ColorSelected else Color(
+                            state.currentColor
+                        ), shape = CircleShape
+                    )
                     .clickable { onAction(ScreenAction.OnToolClick(Tools.COLOR_PALETTE)) }
-            )
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .background(color = Color(state.currentColor), shape = CircleShape)
+                        .align(Alignment.Center)
+                        .clickable { onAction(ScreenAction.OnToolClick(Tools.COLOR_PALETTE)) }
+                )
+            }
+        } else {
+            Spacer(Modifier.height(32.dp))
         }
-    }
+    )
+
 }
 
-@Composable
-private fun Gif(
-    saveGif: () -> Unit
-) {
-    val context = LocalContext.current
-    val permissionResultLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-        onResult = { isGranted ->
-            if (isGranted) {
-                saveGif.invoke()
-                Toast.makeText(context, "Check downloads folder", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(context, "Give permission to save GIF", Toast.LENGTH_SHORT).show()
-            }
-        }
-    )
-    Icon(
-        imageVector = ImageVector.vectorResource(id = R.drawable.ic_gif),
-        contentDescription = null,
-        tint = MaterialTheme.colorScheme.onPrimary,
-        modifier = Modifier
-            .size(32.dp)
-            .clickable {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+    @Composable
+    private fun Gif(
+        saveGif: () -> Unit
+    ) {
+        val context = LocalContext.current
+        val permissionResultLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission(),
+            onResult = { isGranted ->
+                if (isGranted) {
                     saveGif.invoke()
+                    Toast.makeText(context, "Check downloads folder", Toast.LENGTH_SHORT).show()
                 } else {
-                    permissionResultLauncher.launch(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    Toast.makeText(context, "Give permission to save GIF", Toast.LENGTH_SHORT).show()
                 }
             }
-    )
-}
+        )
+        Icon(
+            imageVector = ImageVector.vectorResource(id = R.drawable.ic_gif),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier
+                .size(32.dp)
+                .clickable {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        saveGif.invoke()
+                    } else {
+                        permissionResultLauncher.launch(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    }
+                }
+        )
+    }
 
 @Composable
 fun ExtraColorPalette(
@@ -513,15 +529,17 @@ fun SpeedCard(
         )
     ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            for (speed in listOf(1, 2, 3, 4)) {
-                if (speed == state.currentSpeed) {
+            for (i in 0 until state.speedList.size) {
+                val (text, speed) = state.speedList[i]
+                val currentSpeed = state.speedList[state.currentSpeedIndex].second
+                if (speed == currentSpeed) {
                     Box(
                         modifier = Modifier
                             .size(40.dp)
                             .background(color = Color.White, shape = CircleShape)
                     ) {
                         Text(
-                            "${speed}x",
+                            text,
                             modifier = Modifier.align(Alignment.Center),
                             color = Color.Black
                         )
@@ -529,10 +547,10 @@ fun SpeedCard(
                     Spacer(Modifier.width(16.dp))
                 } else {
                     Text(
-                        "${speed}x",
+                        text,
                         modifier = Modifier.clickable {
                             onAction(
-                                ScreenAction.OnSpeedClickedAction(speed)
+                                ScreenAction.OnSpeedClickedAction(i)
                             )
                         },
                         color = Color.White
