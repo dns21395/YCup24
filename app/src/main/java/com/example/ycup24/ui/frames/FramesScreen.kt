@@ -75,7 +75,7 @@ fun FramesScreen(
                 ) {
                     Row {
                         FrameCard(
-                            circleRadius = state.currentWidth / 2,
+                            circleRadius = state.brushRadius / 2,
                             width = state.previewFrameWidth,
                             height = state.previewFragmentHeight,
                             points = frame,

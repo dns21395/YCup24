@@ -1,5 +1,9 @@
 package com.example.ycup24.ui
 
+import android.os.Build
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -41,6 +45,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -146,7 +151,7 @@ private fun Drawer(
                         state.frames[state.currentFrame - 1].forEach { point ->
                             drawCircle(
                                 color = Color(point.color),
-                                radius = state.currentWidth / 2,
+                                radius = state.brushRadius / 2,
                                 center = point.position.toOffset(),
                             )
                         }
@@ -158,7 +163,7 @@ private fun Drawer(
                             color = Color(state.currentColor),
                             start = line.start.toOffset(),
                             end = line.end.toOffset(),
-                            strokeWidth = state.currentWidth,
+                            strokeWidth = state.brushRadius,
                             cap = StrokeCap.Round
                         )
                     }
@@ -166,7 +171,7 @@ private fun Drawer(
                     state.frames[state.currentFrame].forEach { point ->
                         drawCircle(
                             color = Color(point.color),
-                            radius = state.currentWidth / 2,
+                            radius = state.brushRadius / 2,
                             center = point.position.toOffset(),
                         )
                     }
@@ -176,7 +181,7 @@ private fun Drawer(
                     state.animationPointers.forEach { point ->
                         drawCircle(
                             color = Color(point.color),
-                            radius = state.currentWidth / 2,
+                            radius = state.brushRadius / 2,
                             center = point.position.toOffset(),
                         )
                     }
@@ -198,6 +203,15 @@ private fun Drawer(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(bottom = 8.dp, end = 8.dp)
+                )
+            }
+
+            if (!state.isPlay) {
+                Text(
+                    "Frame #${state.currentFrame + 1} of ${state.frames.size}",
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(16.dp)
                 )
             }
         }
@@ -305,87 +319,107 @@ private fun BottomRow(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (!state.isPlay) {
-            Row(
-                horizontalArrangement = Arrangement.Start
-            ) {
-                Text("Frame #${state.currentFrame + 1} of ${state.frames.size}")
-            }
-
-            Row(
-                Modifier
-                    .weight(1f),
-                horizontalArrangement = Arrangement.End
-            ) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_pen),
-                    contentDescription = null,
-                    tint = if (state.selectedTool == Tools.PEN) ColorSelected else MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clickable { onAction(ScreenAction.OnToolClick(Tools.PEN)) }
+        Icon(
+            imageVector = ImageVector.vectorResource(id = R.drawable.ic_pen),
+            contentDescription = null,
+            tint = if (state.selectedTool == Tools.PEN) ColorSelected else MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier
+                .size(32.dp)
+                .clickable { onAction(ScreenAction.OnToolClick(Tools.PEN)) }
+        )
+        Spacer(Modifier.width(8.dp))
+        Icon(
+            imageVector = ImageVector.vectorResource(id = R.drawable.ic_erase),
+            contentDescription = null,
+            tint = if (state.selectedTool == Tools.ERASER) ColorSelected else MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier
+                .size(32.dp)
+                .clickable { onAction(ScreenAction.OnToolClick(Tools.ERASER)) }
+        )
+        Spacer(Modifier.width(8.dp))
+        Icon(
+            imageVector = ImageVector.vectorResource(id = R.drawable.ic_animated_images),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier
+                .size(32.dp)
+                .clickable { onAction(ScreenAction.ShowGenerateFrameDialog) }
+        )
+        Spacer(Modifier.width(8.dp))
+        Icon(
+            imageVector = ImageVector.vectorResource(id = R.drawable.ic_duplicate),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier
+                .size(32.dp)
+                .clickable { onAction(ScreenAction.DuplicateCurrentFrame) }
+        )
+        Spacer(Modifier.width(8.dp))
+        Text(
+            "${state.currentSpeed}x",
+            modifier = Modifier
+                .size(24.dp)
+                .align(Alignment.CenterVertically)
+                .clickable { onAction(ScreenAction.OnToolClick(Tools.SPEED)) },
+            color = if (state.selectedTool == Tools.SPEED) ColorSelected else MaterialTheme.colorScheme.onPrimary
+        )
+        Spacer(Modifier.width(8.dp))
+        Gif { onAction(ScreenAction.CreateGifActionClicked) }
+        Spacer(Modifier.width(8.dp))
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .background(
+                    color = if (state.selectedTool == Tools.COLOR_PALETTE) ColorSelected else Color(
+                        state.currentColor
+                    ), shape = CircleShape
                 )
-                Spacer(Modifier.width(8.dp))
-                Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_erase),
-                    contentDescription = null,
-                    tint = if (state.selectedTool == Tools.ERASER) ColorSelected else MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clickable { onAction(ScreenAction.OnToolClick(Tools.ERASER)) }
-                )
-                Spacer(Modifier.width(8.dp))
-                Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_animated_images),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clickable { onAction(ScreenAction.ShowGenerateFrameDialog) }
-                )
-                Spacer(Modifier.width(8.dp))
-                Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_duplicate),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clickable { onAction(ScreenAction.DuplicateCurrentFrame) }
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    "${state.currentSpeed}x",
-                    modifier = Modifier
-                        .size(24.dp)
-                        .align(Alignment.CenterVertically)
-                        .clickable { onAction(ScreenAction.OnToolClick(Tools.SPEED)) },
-                    color = if (state.selectedTool == Tools.SPEED) ColorSelected else MaterialTheme.colorScheme.onPrimary
-                )
-                Spacer(Modifier.width(8.dp))
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .background(
-                            color = if (state.selectedTool == Tools.COLOR_PALETTE) ColorSelected else Color(
-                                state.currentColor
-                            ), shape = CircleShape
-                        )
-                        .clickable { onAction(ScreenAction.OnToolClick(Tools.COLOR_PALETTE)) }
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(28.dp)
-                            .background(color = Color(state.currentColor), shape = CircleShape)
-                            .align(Alignment.Center)
-                            .clickable { onAction(ScreenAction.OnToolClick(Tools.COLOR_PALETTE)) }
-                    )
-                }
-            }
+                .clickable { onAction(ScreenAction.OnToolClick(Tools.COLOR_PALETTE)) }
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(28.dp)
+                    .background(color = Color(state.currentColor), shape = CircleShape)
+                    .align(Alignment.Center)
+                    .clickable { onAction(ScreenAction.OnToolClick(Tools.COLOR_PALETTE)) }
+            )
         }
     }
+}
+
+@Composable
+private fun Gif(
+    saveGif: () -> Unit
+) {
+    val context = LocalContext.current
+    val permissionResultLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            if (isGranted) {
+                saveGif.invoke()
+                Toast.makeText(context, "Check downloads folder", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "Give permission to save GIF", Toast.LENGTH_SHORT).show()
+            }
+        }
+    )
+    Icon(
+        imageVector = ImageVector.vectorResource(id = R.drawable.ic_gif),
+        contentDescription = null,
+        tint = MaterialTheme.colorScheme.onPrimary,
+        modifier = Modifier
+            .size(32.dp)
+            .clickable {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    saveGif.invoke()
+                } else {
+                    permissionResultLauncher.launch(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                }
+            }
+    )
 }
 
 @Composable

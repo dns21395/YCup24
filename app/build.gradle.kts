@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.dagger)
     implementation(libs.androidx.viewmodel)
+    implementation(libs.glide.gifencoder)
     kapt(libs.dagger.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

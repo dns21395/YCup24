@@ -12,7 +12,7 @@ data class ScreenState(
     val frameHeight: Int = 0,
     val currentFrame: Int = 0,
     val currentSpeed: Int = 1,
-    val currentWidth: Float = 15.0f,
+    val brushRadius: Float = 15.0f,
     val currentColor: ULong = BrushColorBlue.value,
     val backActions: List<Pair<Tools, List<Point>>> = emptyList(),
     val nextActions: List<Pair<Tools, List<Point>>> = emptyList(),
